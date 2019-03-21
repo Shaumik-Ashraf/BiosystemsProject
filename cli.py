@@ -1,5 +1,7 @@
 # cli.py
 # a command-line interface with the kegg module
+# enter <command> <args> ... to use
+# current commands are help, exit, list, find, get
 
 import kegg;
 
