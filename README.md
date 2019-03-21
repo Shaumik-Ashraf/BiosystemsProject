@@ -4,7 +4,7 @@
  Design a program which extracts biochemical networks from kegg database
  and find an optimal path from molecule A to molecule B 
  
- See https://kegg.jp
+ See [KEGG](https://kegg.jp) (Kyoto Encyclopedia of Genes and Genomes)
  
 ## Design
  1. Extraction
@@ -13,4 +13,6 @@
  4. Optimization
  
 ## Dependencies
- - urllib3 
+ - python >3.0
+ - urllib3; see [Repo here](https://github.com/urllib3/urllib3)
+
