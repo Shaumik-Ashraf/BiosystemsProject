@@ -33,7 +33,11 @@ def get(query):
 		prefix = "ec"
 	else:
 		print("Warning: query type unindentified");
+		
+	#print("DEBUG: ", "query=", query);
+	#print("DEBUG: ", "req=", 'http://rest.kegg.jp/get/{0}:{1}'.format(prefix,query));
 	text=str(http.request('GET', 'http://rest.kegg.jp/get/{0}:{1}'.format(prefix,query)).data);
+	#print("DEBUG: ", "text=", text);
 	text = text.replace("\\t", "\t");
 	text = text.replace("\\n", "\n");
 	text = text[2:len(text)-1]; #rm first 2 and last characters (trash)

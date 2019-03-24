@@ -31,7 +31,7 @@ while 1==1:
 		print( str(out) );
 	elif command[0] == "get":
 		needs_args(2);
-		out = kegg.find(command[1])
+		out = kegg.get(command[1])
 		print( str(out) );
 	else:
 		print("Command unrecognized");
