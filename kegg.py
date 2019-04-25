@@ -59,7 +59,17 @@ def direct(arg_list):
         request = "http://rest.kegg.jp/"
         for s in arg_list:
                 request += "/".join(arg_list);
-        text=str(http.request('GET', 'http://rest.kegg.jp/info/{0}'.format(database)).data);
+        response = str(http.request('GET', request).data);
+		return(response);
+
+#def conv(two_ids)
+#	text = direct(['conv', two_ids[0], two_ids[1]]);
+		
+def link(args)
+	text = direct(['link', args[0], args[1]])
+	
+
+#def ddi()
 
 
 
