@@ -6,21 +6,16 @@ import urllib3;
 
 http = urllib3.PoolManager();
 
-#direct simply joins the array with /s and sends request to kegg
+#direct simply joins the array with slashes and sends request to kegg
 def direct(arg_list):
 	request = "http://rest.kegg.jp/"
 	request += "/".join(arg_list);
-	#print( request );
-	response = http.request('GET', request).data.decode();
-	#print( response );
+	response = http.request('GET', request).data.decode() #decode() turns it into string
 	return(response);
 
 def list(database):
 	newstr = direct(['list', database]);
-	#newstr = newstr.replace("\\t", "\t");
 	newlist = newstr.split('\\n');
-	#newlist[0] = newlist[0][2:]; #shave off trash at beggining of first element
-	#del newlist[len(newlist)-1]; #shave off last element (trash)
 	retlist = newlist.copy(); #for preallocation
 	for i in range( len(newlist) ):
 		retlist[i] = newlist[i].split('\\t');
@@ -35,47 +30,29 @@ def find(datatype):
 	return(newlist);
 
 def get(query):
-	if query[0] == "R":
-		prefix = "rn"
-	elif query[0] == "C":
-		prefix = "cpd"
-	elif query[0:3] == "map":
-		prefix = "path"
-	elif len(query.split('.')) == 4:
-		prefix = "ec"
-	else:
-		print("Warning: query type unindentified");
-		
-	text=str(http.request('GET', 'http://rest.kegg.jp/get/{0}:{1}'.format(prefix,query)).data);
+	text = direct(['get', query]);
 	text = text.replace("\\t", "\t");
 	text = text.replace("\\n", "\n");
-	text = text[2:len(text)-1]; #rm first 2 and last characters (trash)
+	#text = text[2:len(text)-1]; #rm first 2 and last characters (trash)
 	return(text)
-
-#get command id format to prefix map
-#reaction: <id> = Rxxxxx, <prefix> = rn
-#enzyme: <id> = n.n.n.n, <prefix> = ec
-#path: <id> = mapxxxxx, <prefix> = path
-#compound: <id> = Cxxxxx, <prefix> = cpd
 
 def info(database):
-	text=str(http.request('GET', 'http://rest.kegg.jp/info/{0}'.format(database)).data);
-	#print("DEBUG: ", "text=", text);
+	text = direct(['info', database]);
 	text = text.replace("\\t", "\t");
 	text = text.replace("\\n", "\n");
 	text = text[2:len(text)-1]; #rm first 2 and last characters (trash)
 	return(text)
-
 
 #def conv(two_ids)
 #       text = direct(['conv', two_ids[0], two_ids[1]]);
 		
-def link(args):
-        text = direct(['link', args[0], args[1]])
-	
-
-#def ddi()
-
+def link(database, query):
+        text = direct(['link', database, query])
+	templist = text.split('\\n')
+	retlist = templist.copy();  #preallocate
+	for i in range(len(templist)):
+		retlist[i] = templist[i].split('\\t')[1]
+	return(retlist);
 
 
 ignore_this_string = """
