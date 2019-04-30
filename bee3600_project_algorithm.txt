@@ -18,6 +18,7 @@ link/module/cpd:C00058
 			=>if C00058 FOUND
 			get/C00101+...
 			[R...]
+==========DO THIS===============================
 
 link/pathway/cpd:C00058
 [path:map00620, path:map00625, path:map00630, path:map00680, ...]

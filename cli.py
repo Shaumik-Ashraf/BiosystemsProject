@@ -22,6 +22,7 @@ help_text = """
                 find <database> <term to search> - returns all entries in database with term specified
                 get <kegg id> - returns information about object with specified kegg id
                 info <database> - returns information about the database
+				set <setting> <value>
 
         The databases in KEGG include but are not limited to:
                 reaction
@@ -30,11 +31,14 @@ help_text = """
                 compound
                 pathway
 
-        Note for get command:
-                possible KEGG IDs include R03544, 3.2.42.1, C00116, and map12345
-                the get command has only been programmed to check fo reaction,
-                enzyme, compound, and map databases.
-
+		Possible settings to change are:
+				list-limit -> maximum number of elements to output from a list, set to -1 for no limit
+				output-line-limit -> maximum number of lines to output (excluding lists), set to -1 for no limit
+				search-depth-limit -> Equals the base-n logrithm of O(n) of run time of search-pathway; the 
+					bigger this number is, the exponentially larger the loading time. Too high of a number may 
+					improve search results but may also cause the program to crash.
+				verbose -> prints detailed output on what the program is doing, either True/False
+				
         See https://kegg.jp for more information on KEGG.
                 
         Also, please give us an extension.
@@ -45,7 +49,9 @@ def needs_args(n):
                 print("Warning, at least " + str(n-1) + " command arguement(s) required.");
 
 # ========command-line loop================================
-print( "Start\n" );
+print( "Start KEGG Command-Line Interface" );
+settings = { "list-limit":20, "output-line-limit":20, "search-depth-limit":10, "verbose":False };
+print( "Using settings: " + str(settings) + "\n" );
 while 1==1:
         print("kegg-cli>>", end="");
         command = input().strip().split(" ");
@@ -53,13 +59,15 @@ while 1==1:
                 print(help_text)
         elif command[0] == "exit":
                 break;
+		elif command[0] == "set":
+				if
         elif command[0] == "list":
                 needs_args(2);
                 out = kegg.list(command[1])
                 print( str(out) );
         elif command[0] == "find":
                 needs_args(3);
-                out = kegg.find( "{0}/{1}".format(command[1],command[2]) );
+                out = kegg.find2( command[1], command[2] );
                 print( str(out) );
         elif command[0] == "get":
                 needs_args(2);
@@ -69,6 +77,11 @@ while 1==1:
                 needs_args(2);
                 out = kegg.info(command[1])
                 print( str(out) );
+		elif command[0] == "search-pathway":
+		
+		elif command[0] == "search" && command[1] == "pathway":
+				print("You mean search-pathway");
+				
         else:
                 print("Command unrecognized");
 
