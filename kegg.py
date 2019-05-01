@@ -29,6 +29,14 @@ def find(datatype):
 	del newlist[len(newlist)-1]; #shave off last element (trash)
 	return(newlist);
 
+def find2(database, query): #this is used in cli
+	newstr = direct(['find', database, query])
+	newstr = newstr.replace("\\t", "\t");
+	newlist = newstr.split('\\n');
+	newlist[0] = newlist[0][2:]; #shave off trash at beggining of first element
+	del newlist[len(newlist)-1]; #shave off last element (trash)
+	return(newlist);
+
 def get(query):
 	text = direct(['get', query]);
 	text = text.replace("\\t", "\t");
@@ -47,15 +55,33 @@ def info(database):
 #       text = direct(['conv', two_ids[0], two_ids[1]]);
 		
 def link(database, query):
-        text = direct(['link', database, query])
-	templist = text.split('\\n')
+    temptext = direct(['link', database, query])
+	templist = temptext.split('\\n')
 	retlist = templist.copy();  #preallocate
 	for i in range(len(templist)):
 		retlist[i] = templist[i].split('\\t')[1]
 	return(retlist);
 
-
-ignore_this_string = """
+#get_extract returns a dictionary containing any info
+#provided in from a get command
+#i.e.: get/md:M00377 => { "ENTRY":M00377, "NAME":"Reductive ... }
+def get_extract(query):
+	toparse = get(query);
+	lines = toparse.splitlines();
+	ret = {}; #new dictionary
+	for line in lines:
+		tokens = line.split(' ')
+		while '' in tokens:
+			tokens.remove('')
+		if tokens[0].isupper():
+			ret[ tokens[0] ] = tokens[1:].join(' ')
+		else:
+			ret[ tokens[0] ].append( tokens.join(' ') );
+		tokens[i].strip()
+	if ret.has_key( 'REACTION' ):
+		#polish...
+	return ret;
+	
 def A2B(compoundA, compoundB):
 	#set variable idA, ask if compoundA is correctly found
 	templist = find( 'compound/{0}'.format(compoundA) );
@@ -91,5 +117,13 @@ def A2B(compoundA, compoundB):
 		print( '{0} could not be found.'.format( compoundB.capitalize() ) )
 		return( -1 );
 	
-	#To be continued....
-"""
+	templist = link("module", idA);
+	if( templist == [] ):
+		#print warning and use link/reaction/idA
+	i = 0;
+	while i < :
+		extract = get_extract(idA)
+		#....
+
+
+def A2B_helper()
