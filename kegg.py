@@ -13,7 +13,7 @@ def direct(arg_list):
 	response = http.request('GET', request).data.decode() #decode() turns it into string
 	return(response);
 
-def list(database):
+def list2(database):
 	newstr = direct(['list', database]);
 	newlist = newstr.split('\n');
 	retlist = newlist.copy(); #for preallocation
