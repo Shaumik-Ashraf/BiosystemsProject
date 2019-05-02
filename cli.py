@@ -48,10 +48,24 @@ def needs_args(n):
         if len(command) < n:
                 print("Warning, at least " + str(n-1) + " command arguement(s) required.");
 
+def print_list(l, limit):
+	if limit > 0:
+		print( str(l[ 0:limit ]) );
+	else:
+		print( str(out) );
+
+def print_text(t, limit):
+	if limit > 0:
+		print( t[0:limit] );
+	else:
+		print( t );
+
 # ========command-line loop================================
 print( "Start KEGG Command-Line Interface" );
-settings = { "list-limit":20, "output-line-limit":20, "search-depth-limit":10, "verbose":False };
-print( "Using settings: " + str(settings) + "\n" );
+list_limit = 20;
+output_line_limit = 20;
+verbose = False;
+print("Settings: " + str( {'list-limit':list_limit, 'output-line-limit':output_line_limit, 'verbose':verbose} ) + "\n");
 while 1==1:
         print("kegg-cli>>", end="");
         command = input().strip().split(" ");
@@ -64,7 +78,7 @@ while 1==1:
         elif command[0] == "list":
                 needs_args(2);
                 out = kegg.list(command[1])
-                print( str(out) );
+				print_list( out, list_limit );
         elif command[0] == "find":
                 needs_args(3);
                 out = kegg.find2( command[1], command[2] );

@@ -69,15 +69,19 @@ def get_extract(query):
 	toparse = get(query);
 	lines = toparse.splitlines();
 	ret = {}; #new dictionary
+
 	for line in lines:
 		tokens = line.split(' ')
 		while '' in tokens:
 			tokens.remove('')
-		if tokens[0].isupper():
-			ret[ tokens[0] ] = tokens[1:].join(' ')
+		if tokens[0] == '///':
+			break;
+		elif tokens[0].isupper():
+			key = tokens[0]
+			ret[ key ] = tokens[1:].join(' ')
 		else:
-			ret[ tokens[0] ].append( tokens.join(' ') );
-		tokens[i].strip()
+			ret[ key ].append( tokens.join(' ') );
+
 	if ret.has_key( 'REACTION' ):
 		#polish...
 	return ret;
