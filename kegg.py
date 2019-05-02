@@ -15,10 +15,10 @@ def direct(arg_list):
 
 def list(database):
 	newstr = direct(['list', database]);
-	newlist = newstr.split('\\n');
+	newlist = newstr.split('\n');
 	retlist = newlist.copy(); #for preallocation
 	for i in range( len(newlist) ):
-		retlist[i] = newlist[i].split('\\t');
+		retlist[i] = newlist[i].split('\t');
 	return(retlist);   #returns list of lists
 		
 def find(datatype):
@@ -31,8 +31,8 @@ def find(datatype):
 
 def find2(database, query): #this is used in cli
 	newstr = direct(['find', database, query])
-	newstr = newstr.replace("\\t", "\t");
-	newlist = newstr.split('\\n');
+	#newstr = newstr.replace("\\t", "\t");
+	newlist = newstr.split("\n");
 	newlist[0] = newlist[0][2:]; #shave off trash at beggining of first element
 	del newlist[len(newlist)-1]; #shave off last element (trash)
 	return(newlist);
@@ -55,12 +55,12 @@ def info(database):
 #       text = direct(['conv', two_ids[0], two_ids[1]]);
 		
 def link(database, query):
-    temptext = direct(['link', database, query])
-	templist = temptext.split('\\n')
-	retlist = templist.copy();  #preallocate
-	for i in range(len(templist)):
-		retlist[i] = templist[i].split('\\t')[1]
-	return(retlist);
+        temptext = direct(['link', database, query])
+        templist = temptext.split('\n')
+        retlist = templist.copy();  #preallocate
+        for i in range(len(templist)):
+        	retlist[i] = templist[i].split('\t')[1]
+        return(retlist);
 
 #get_extract returns a dictionary containing any info
 #provided in from a get command
@@ -82,16 +82,18 @@ def get_extract(query):
 		else:
 			ret[ key ].append( tokens.join(' ') );
 
-	if ret.has_key( 'REACTION' ):
+	#if ret.has_key( 'REACTION' ):
 		#polish...
+        
 	return ret;
-	
+
+"""
 def A2B(compoundA, compoundB):
 	#set variable idA, ask if compoundA is correctly found
 	templist = find( 'compound/{0}'.format(compoundA) );
 	found = False;
 	for i in range(len(templist)):
-		templist2 = templist[i].split('\t')
+                templist2 = templist[i].split('\t')
 		idA = templist2[0]
 		print( 'Is your first compound also known as: {0}? [y/n]'.format(templist2[1]) )
 		in_buffer = input();
@@ -131,3 +133,4 @@ def A2B(compoundA, compoundB):
 
 
 def A2B_helper()
+"""
