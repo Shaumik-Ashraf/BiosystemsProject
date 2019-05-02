@@ -55,16 +55,17 @@ def info(database):
 #       text = direct(['conv', two_ids[0], two_ids[1]]);
 		
 def link(database, query):
-        temptext = direct(['link', database, query])
-        templist = temptext.split('\n')
-        retlist = templist.copy();  #preallocate
-        for i in range(len(templist)):
-        	retlist[i] = templist[i].split('\t')[1]
-        return(retlist);
+	temptext = direct(['link', database, query])
+	templist = temptext.split('\n')
+	retlist = templist.copy();  #preallocate
+	for i in range(len(templist)):
+		retlist[i] = templist[i].split('\t')[1]
+	return(retlist);
 
 #get_extract returns a dictionary containing any info
 #provided in from a get command
 #i.e.: get/md:M00377 => { "ENTRY":M00377, "NAME":"Reductive ... }
+#THIS ONLY ENTERS THE FIRST ENTRY FOR SOME REASON 
 def get_extract(query):
 	toparse = get(query);
 	lines = toparse.splitlines();
@@ -83,8 +84,7 @@ def get_extract(query):
 			ret[ key ].append( tokens.join(' ') );
 
 	#if ret.has_key( 'REACTION' ):
-		#polish...
-        
+	
 	return ret;
 
 """
@@ -93,7 +93,7 @@ def A2B(compoundA, compoundB):
 	templist = find( 'compound/{0}'.format(compoundA) );
 	found = False;
 	for i in range(len(templist)):
-                templist2 = templist[i].split('\t')
+		templist2 = templist[i].split('\t')
 		idA = templist2[0]
 		print( 'Is your first compound also known as: {0}? [y/n]'.format(templist2[1]) )
 		in_buffer = input();

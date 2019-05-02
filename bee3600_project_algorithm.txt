@@ -19,25 +19,3 @@ link/module/cpd:C00058
 			get/C00101+...
 			[R...]
 ==========DO THIS===============================
-
-link/pathway/cpd:C00058
-[path:map00620, path:map00625, path:map00630, path:map00680, ...]
-	get/path:map00620
-	[M00168, M00169, M00172, M00307, M00579]
-		get/M00168 => No C00058 => EXIT NOT FOUND
-		get/M00169 => No C00058 => EXIT NOT FOUND
-		... => EXIT NOT FOUND
-	get/path:map00625
-	[] => EXIT NOT FOUND
-	get/path:map00630
-	[M00012, M00373, M00532, M00740, M00741]
-		get/M00012+M00373+M00532+M00740+M00741 => EXIT NOT FOUND
-	get/path:map00680
-	[M00020, M00174, M00344, M00345, M00346, M00356, M00357,M00358,M00378,M00422,M00563,M00567,M00608]
-		get/M00020+M00174+M00344+M00345+M00346+M00356+M00357+M00358+M00378+M00422+M00563+M00567+M00608
-		=> EXIT NOT FOUND
-========PATHWAY BASED SEARCH FAILS====================
-
-link/pathway/cpd:C06142
-[path:map00650, path:map01100, path:map01120, path:map01220]
-	get/path:map00650

@@ -89,7 +89,6 @@ while 1==1:
 				verbose = False;
 		else:
 			print( command[1] + " unrecognized" );
-		
 	elif command[0] == "list":
 		needs_args(2);
 		out = kegg.list(command[1]);
@@ -105,7 +104,17 @@ while 1==1:
 	elif command[0] == "info":
 		needs_args(2);
 		out = kegg.info(command[1]);
-		print_Text( out, output_line_limit );
+		print_text( out, output_line_limit );
+	elif command[0] == "link":
+		needs_args(2);
+		out = kegg.link(command[1], command[2]);
+		print_list(out, list_limit);
+	elif command[0] == "extract":
+		needs_args(2);
+		if not command[1].numeric():
+			print('Require kegg id')
+		dct = get_extract(command[1]);
+		print( str(dct) );
 	elif command[0] == "search-pathway":
 		print("unimplemented")
 		
