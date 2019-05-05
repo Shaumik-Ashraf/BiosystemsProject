@@ -41,7 +41,7 @@ help_text = """
 				
 	See https://kegg.jp for more information on KEGG.
 		
-	Also, please give us an extension.
+	Also, please give us an A.
 """
 
 def needs_args(n):
@@ -66,8 +66,9 @@ def print_text(t, limit):
 print( "Start KEGG Command-Line Interface" );
 list_limit = 20;
 output_line_limit = 20;
+depth_limit = 50;
 verbose = False;
-print("Settings: " + str( {'list-limit':list_limit, 'output-line-limit':output_line_limit, 'verbose':verbose} ) + "\n");
+print("Settings: " + str( {'list-limit':list_limit, 'output-line-limit':output_line_limit, 'verbose':verbose, 'depth-limit':depth_limit} ) + "\n");
 while 1==1:
 	print("kegg-cli>>", end="");
 	command = input().strip().split(" ");
@@ -82,6 +83,8 @@ while 1==1:
 			list_limit = int(command[2]);
 		elif command[1]=="output-line-limit":
 			output_line_limit = int(command[2]);
+		elif command[1]=="depth-limit":
+			depth_limit = int(command[2]);
 		elif command[1]=="verbose":
 			if command[2] == "true":
 				verbose = True;

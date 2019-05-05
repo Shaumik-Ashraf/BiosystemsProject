@@ -72,11 +72,20 @@ def get_extract(query):
 	ret = {}; #new dictionary
 
 	for line in lines:
-		tokens = line.split(' ')
+		tokens = line.split()
 		while '' in tokens:
 			tokens.remove('')
 		if tokens[0] == '///':
 			break;
+		elif tokens[0] == "ENTRY":
+			ret["ENTRY"] = tokens[1];
+			ret["TYPE"] = tokens[2:];
+		elif tokens[0] == "COMPOUND":
+		
+		elif (tokens[0] == "REACTION") and ('Module' in ret["TYPE"]):
+		
+		elif (tokens[0] == "EQUATION") and ('Reaction' in ret["TYPE"]):
+			
 		elif tokens[0].isupper():
 			key = tokens[0]
 			ret[ key ] = tokens[1:].join(' ')
