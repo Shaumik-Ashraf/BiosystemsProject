@@ -64,7 +64,7 @@ def link(database, query):
 
 #get_extract returns a dictionary containing any info
 #provided in from a get command
-#i.e.: get/md:M00377 => { "ENTRY":M00377, "NAME":"Reductive ... }
+#i.e.: get/md:M00377 => { "ENTRY":M00377, "NAME":"Reductive ... "REACTION":{"rnxxx":[[a,b][c,d]]}}
 #THIS ONLY ENTERS THE FIRST ENTRY FOR SOME REASON 
 def get_extract(query):
 	toparse = get(query);
@@ -87,8 +87,8 @@ def get_extract(query):
 	
 	return ret;
 
-"""
-def A2B(compoundA, compoundB):
+
+def A2B(compoundA, compoundB, depth_limit):
 	#set variable idA, ask if compoundA is correctly found
 	templist = find( 'compound/{0}'.format(compoundA) );
 	found = False;
@@ -102,7 +102,7 @@ def A2B(compoundA, compoundB):
 			break;
 		else:
 			continue;
-	if( !found ):
+	if( not found ):
 		print( '{0} could not be found.'.format(compoundA.capitalize()) )
 		return( -1 );
 	
@@ -119,18 +119,85 @@ def A2B(compoundA, compoundB):
 			break;
 		else:
 			continue;
-	if( !found ):
+	if( not found ):
 		print( '{0} could not be found.'.format( compoundB.capitalize() ) )
 		return( -1 );
 	
-	templist = link("module", idA);
-	if( templist == [] ):
-		#print warning and use link/reaction/idA
-	i = 0;
-	while i < :
-		extract = get_extract(idA)
-		#....
+	solution = {'found':False, 'modules':[], 'reactions':[], 'enzymes':[]};
+	mdlist = link("module", idA);
+	if( mdlist == [] ):
+		return solution; #no solution for module based search
+		
+	for md in mdlist:
+		x = module_helper(cpdB, md, [], 0, depth_limit)
+		if x[ len(x)-1 ]:
+			#x is solution
+			solution['found'] = True;
+			solution['modules'] = x;
+			break;
+		else:
+			#solution not found
+			return( solution );
+	
+	for md in solution['modules']:
+		md_data = get_extract(md);
+		for i in md_data['REACTION']:
+			r = md_data['REACTION'][i]['id']
+			r_data = get_extract(r);
+			solution['enzymes'].append( r_data['ENZYME'] )
+			solution['reactions'].append(r)
+		solution['modules'].append( md )
+	
+	return solution;
+	
+def module_helper(cpdB, module, past_modules, depth, limit):
+	#print( "Trying " + str(past_modules + [module]) );
+	if depth > limit:
+		return [False]
+	elif module in past_modules:
+		return [False]
+	else:
+		md_data = get_extract(module);
+		rxns = [];
+		for i in md_data['REACTION']:
+			rxns = rxns + [ md_data['REACTION'][i]['id'] ]
+			if cpdB in md_data['REACTION'][i]['PRODUCTS']:
+				return [module];
+
+		rxns = rxns.reverse(); #optimizes for assimilatory pathways
+		for r in rxns:
+			next_md_list = link('module', r);
+			for next_module in next_md_list:
+				x = [module] + module_helper(cpdB, next_module, past_modules + [module], depth+1, limit); #recurse
+				if x[ len(x)-1 ]: #if last element is not False
+					#found!
+					return x; #returns array of modules
+				else:
+					continue;
+
+		return [False]; #no solutions
 
 
-def A2B_helper()
-"""
+def reaction_helper(cpd_start, cpdB, reaction, past_reactions, depth, limit):
+	#print( "Trying " + str(past_reactions + [reaction]) );
+	if depth > limit:
+		return [False];
+	if reaction in past_reactions:
+		return [False];
+	rxn_data = get_extract(reaction);
+	if cpd_start not in rxn_data['EQUATION']['REACTANTS']:
+		return [False];
+	products = rxn_data['EQUATION']['PRODUCTS'];
+	if cpdB in products:
+		return [reaction];
+	else:
+		for p in products:
+			next_rxn_list = link('reaction', p);
+			for next_reaction in next_rxn_list:
+				x = [reaction] + reaction_helper(p, cpdB, next_reaction, past_reactions + [reaction], depth+1, limit);
+				if x[ len(x)-1 ]: #if last element not False
+					return x;
+				else:
+					continue;
+					
+		return [False];
