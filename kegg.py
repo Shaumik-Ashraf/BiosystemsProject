@@ -139,14 +139,34 @@ def get_extract(query):
 				
 				ret[key].append(d);	
 		elif (key == "REACTION") and ('Compound' in ret["TYPE"]):
-			
+			ret[key] = [];
+			lines = block.splitlines();
+			for each in lines:
+				line = each.trim;
+				tokens = line.split();
+				while '' in tokens:
+					tokens.remove('')
+				for token in tokens:
+					ret[key].append(token)
 		elif (key == "EQUATION") and ('Reaction' in ret["TYPE"]):
+			ret[key] = {'REACTANTS':[], 'PRODUCTS':[], 'RATIOS':[]}
+			tokens = block.trim.split();
+			while '' in tokens:
+				tokens.remove('')
 			
-		elif tokens[0].isupper():
-			key = tokens[0]
-			ret[ key ] = [ tokens[1:].join(' ') ];
+			passed_arrow = False;
+			for token in tokens:
+				if token == "<=>":
+					passed_arrow = True;
+				elif isdigit(token):
+					ret[key]['RATIOS'].append(token);
+				elif( token.startswith('C') and (not passed_arrow)):
+					ret[key]['REACTANTS'].append( token );
+				elif( token.startswith('C') ): #and passed_arrow (implied):
+					ret[key]['PRODUCTS'].append( token );
+					
 		else:
-			ret[ key ].append( tokens.join(' ') );
+			ret[ key ] = block;
 
 	return ret;
 
@@ -264,3 +284,7 @@ def reaction_helper(cpd_start, cpdB, reaction, past_reactions, depth, limit):
 					continue;
 					
 		return [False];
+
+def remove_id_prefix(s):
+        i = s.index(':')
+        return s[(i+1):]
