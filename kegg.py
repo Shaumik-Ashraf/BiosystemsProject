@@ -170,7 +170,6 @@ def get_extract(query):
 
 	return ret;
 
-
 def A2B(compoundA, compoundB, depth_limit):
 	#set variable idA, ask if compoundA is correctly found
 	templist = find( 'compound/{0}'.format(compoundA) );
@@ -288,3 +287,20 @@ def reaction_helper(cpd_start, cpdB, reaction, past_reactions, depth, limit):
 def remove_id_prefix(s):
         i = s.index(':')
         return s[(i+1):]
+
+def get_id(database, obj):
+        templist = find2( database, obj );
+	found = False;
+	for i in range(len(templist)):
+		templist2 = templist[i].split('\t')
+		print( 'Is {0} the correct {1}? [y/n]'.format(templist2[1], database) )
+		in_buffer = input();
+		if in_buffer.upper().startswith('Y'):
+			found = True;
+			return templist2[0];
+		else:
+			continue;
+	if( not found ):
+		print( '{0} could not be found.'.format(compoundA.capitalize()) )
+		return( -1 );
+

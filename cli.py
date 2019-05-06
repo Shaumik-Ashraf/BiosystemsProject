@@ -40,8 +40,6 @@ help_text = """
 				verbose -> prints detailed output on what the program is doing, either True/False
 				
 	See https://kegg.jp for more information on KEGG.
-		
-	Also, please give us an A.
 """
 
 def needs_args(n):
@@ -62,16 +60,27 @@ def print_text(t, limit):
 	else:
 		print( t );
 
+def singularize(s):
+        if s.endswith('s'):
+                return s[:len(s)-1]
+
 # ========command-line loop================================
 print( "Start KEGG Command-Line Interface" );
 list_limit = 20;
 output_line_limit = 20;
 depth_limit = 50;
 verbose = False;
+defined = {'water':'C00001', 'H20':'C00001'}
 print("Settings: " + str( {'list-limit':list_limit, 'output-line-limit':output_line_limit, 'verbose':verbose, 'depth-limit':depth_limit} ) + "\n");
 while 1==1:
 	print("kegg-cli>>", end="");
 	command = input().strip().split(" ");
+	for i in range(len(i)):
+                if i==1:
+                        command[i] = singularize(command[i])
+                if defined.has_key(command[i]):
+                        command[i] = defined[command[i]]
+        
 	if command[0] == "help":
 		print(help_text);
 	elif command[0] == "exit":
@@ -123,7 +132,14 @@ while 1==1:
 		
 	elif command[0] == "search" and command[1] == "pathway":
 		print("You mean search-pathway");
-		
+
+	elif command[0] == "define":
+                kid = get_id(command[1], command[2]);
+                kid = remove_id_prefix(kid);
+                defined[command[2]] = kid;
+        elif command[0] == "see-defined":
+                for k in defined.keys():
+                        print( k + ": " + defined[k] );
 	else:
 		print("Command unrecognized");
 
