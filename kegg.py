@@ -3,6 +3,7 @@
 # requires: urllib3
 
 import urllib3;
+import re;
 
 http = urllib3.PoolManager();
 
@@ -67,33 +68,50 @@ def link(database, query):
 #i.e.: get/md:M00377 => { "ENTRY":M00377, "NAME":"Reductive ... "REACTION":{"rnxxx":[[a,b][c,d]]}}
 #THIS ONLY ENTERS THE FIRST ENTRY FOR SOME REASON 
 def get_extract(query):
-	toparse = get(query);
-	lines = toparse.splitlines();
-	ret = {}; #new dictionary
+	to_parse = get(query);
+	lines = to_parse.splitlines();	
+	ret = {};
 
-	for line in lines:
-		tokens = line.split()
-		while '' in tokens:
-			tokens.remove('')
-		if tokens[0] == '///':
+	while '' in lines:
+		lines.remove('')
+	
+	blocks = [];
+	j = -1;
+	i = 0;
+	while i < len(lines):
+		if lines[i] == '///':
 			break;
-		elif tokens[0] == "ENTRY":
-			ret["ENTRY"] = tokens[1];
-			ret["TYPE"] = tokens[2:];
+		elif re.match(r'\s', lines[i], 0).group(0) == lines[i][0]: #if first character is a space
+			blocks[j] += lines[i] #concat strings
+		else:
+			j += 1;
+			blocks[j] = lines[i]; #start next array element
+			ret[lines[i]] = blocks[j].split()[0];
+			if ret[lines[i]] == "ENTRY":
+				tokens = blocks[j].split()
+				ret[lines[i]] = tokens[1];
+				ret["TYPE"] = tokens[2:];
+		i += 1;
+		
+	for key in ret.keys():
+		block = blocks[ret[key]]
+		if key == '///': #shouldnt occur
+			break;
+		elif key[0] == "ENTRY":
 		elif tokens[0] == "COMPOUND":
 		
 		elif (tokens[0] == "REACTION") and ('Module' in ret["TYPE"]):
+		
+		elif (tokens[0] == "REACTION") and ('Compound' in ret["TYPE"]):
 		
 		elif (tokens[0] == "EQUATION") and ('Reaction' in ret["TYPE"]):
 			
 		elif tokens[0].isupper():
 			key = tokens[0]
-			ret[ key ] = tokens[1:].join(' ')
+			ret[ key ] = [ tokens[1:].join(' ') ];
 		else:
 			ret[ key ].append( tokens.join(' ') );
 
-	#if ret.has_key( 'REACTION' ):
-	
 	return ret;
 
 
