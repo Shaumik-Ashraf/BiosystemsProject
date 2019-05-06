@@ -74,37 +74,73 @@ def get_extract(query):
 
 	while '' in lines:
 		lines.remove('')
-	
+	 
 	blocks = [];
 	j = -1;
 	i = 0;
-	while i < len(lines):
+	while i < len(lines): #parse keys and blocks
 		if lines[i] == '///':
 			break;
 		elif re.match(r'\s', lines[i], 0).group(0) == lines[i][0]: #if first character is a space
 			blocks[j] += lines[i] #concat strings
 		else:
-			j += 1;
-			blocks[j] = lines[i]; #start next array element
-			ret[lines[i]] = blocks[j].split()[0];
+			j += 1; #start next blocks array element
+			temparray = lines[i].split(); 
+			ret[temparray[0]] = j;
+			blocks[j] = temparray[1:]
 			if ret[lines[i]] == "ENTRY":
 				tokens = blocks[j].split()
 				ret[lines[i]] = tokens[1];
 				ret["TYPE"] = tokens[2:];
 		i += 1;
 		
-	for key in ret.keys():
+	for key in ret.keys(): #parse blocks into structured dicts
 		block = blocks[ret[key]]
 		if key == '///': #shouldnt occur
 			break;
-		elif key[0] == "ENTRY":
-		elif tokens[0] == "COMPOUND":
-		
-		elif (tokens[0] == "REACTION") and ('Module' in ret["TYPE"]):
-		
-		elif (tokens[0] == "REACTION") and ('Compound' in ret["TYPE"]):
-		
-		elif (tokens[0] == "EQUATION") and ('Reaction' in ret["TYPE"]):
+		elif key == "ENTRY":
+			continue; 
+		elif key == "COMPOUND":
+			ret[key] = []
+			lines = block.splitlines()
+			for i in range(len(lines)):
+				line = lines[i].strip()
+				match_obj = re.match(r'(C[0-9]{5})[\s]+(.*)', line, 0);
+				id = match_obj.group(1);
+				name = match_obj.group(2);
+				(ret[key]).append( {'ID':id, 'NAME':name} );
+		elif (key == "REACTION") and ('Module' in ret["TYPE"]):
+			ret[key] = [] # [{'ID':<id>, 'REACTANTS':[...], 'PRODUCTS':[...]}]
+			lines = block.splitlines();
+			for i in range(len(lines)): #parsing each line
+				d = {'ID':'', 'REACTANTS':[], 'PRODUCTS':[] }
+				line = lines[i].strip();
+				tokens = line.split();
+				while '' in tokens:
+					tokens.remove('');
+					
+				if ',' in tokens[0]:
+					d['ID'] = tokens[0].split(',')[0];
+				else:
+					d['ID'] = tokens[0];
+					#doesn't consider case of RX,RY+RZ
+				
+				passed_arrow = False;
+				j = 1;
+				while j < len(tokens): #parsing each token
+					if tokens[j] == '->':
+						passed_arrow = True;
+					elif( (not passed_arrow) and (tokens[j] != '+') ):
+						d['REACTANTS'].append(tokens[j]);
+					elif( passed_arrow and (tokens[j] != '+') ):
+						d['PRODUCTS'].append(tokens[j])
+					else:
+						continue;
+				
+				ret[key].append(d);	
+		elif (key == "REACTION") and ('Compound' in ret["TYPE"]):
+			
+		elif (key == "EQUATION") and ('Reaction' in ret["TYPE"]):
 			
 		elif tokens[0].isupper():
 			key = tokens[0]
