@@ -94,12 +94,12 @@ def get_extract(query):
 		else:
                         #start a new block
 			j += 1; #start next blocks array element
-			print( "DEBUG: " + str(lines[i]) );
+			#print( "DEBUG: " + str(lines[i]) );
 			temparray = lines[i].split();
 			while '' in temparray:
 				temparray.remove('');
-			print( "DEBUG: " + str(temparray) );
-			print( "DEBUG: " + str(temparray[1]) );
+			#print( "DEBUG: " + str(temparray) );
+			#print( "DEBUG: " + str(temparray[1]) );
 			key = temparray[0];
 			ret[temparray[0]] = j;
 			del temparray[0];
@@ -110,11 +110,17 @@ def get_extract(query):
 				ret[key] = tokens[0];
 				ret["TYPE"] = tokens[1:];
 		i += 1;
-	print("DEBUG: " + str(ret) )
-	print("DEBUG: " + str(blocks) )
+	print("DEBUG: " + str(key) )
+	print("DEBUG: " + str(ret[key]))
+	print("DEBUG: " + blocks[ret[key]] )
+	print("DEBUG: " + str(int(ret[key])))
 	
 	for key in ret.keys(): #parse blocks into structured dicts
-		block = blocks[ int(ret[key]) ]
+		print("DEBUG: " + key )
+		print("DEBUG: " + str(ret[key]))
+		print("DEBUG: " + blocks[ret[key]] )
+		print("DEBUG: " + str(int(ret[key])))
+		block = blocks[ret[key]]
 		if key == '///': #shouldnt occur
 			break;
 		elif key == "ENTRY":
@@ -322,4 +328,16 @@ def get_id(database, obj):
 	if( not found ):
 		print( '{0} could not be found.'.format(compoundA.capitalize()) )
 		return( -1 );
+
+def GIBBS(RN): #Finds the Gibbs free energy for any kegg reaction via the reaction number
+    newstr = http.request('GET', 'http://rest.kegg.jp/get/rn:{0}'.format(RN)).data.decode() 
+    EC = newstr.split("ENZYME")[1].split("\n")[0].strip() 
+    bcdat = http.request('GET', 'https://biocyc.org/META/NEW-IMAGE?type=EC-NUMBER&object=EC-{0}'.format(EC)).data.decode("utf-8", "ignore")
+    bclink = bcdat.split("Reaction: \n                              \n <br> <a href=\"")[1].split("\" class=\"REACTION\"")[0].strip()
+    brstr = http.request('GET', 'https://biocyc.org{0}'.format(bclink)).data.decode("utf-8", "ignore")
+    if "Standard Gibbs Free Energy" in brstr :
+        GFE = (brstr.split("kcal/mol")[0]).split("Standard Gibbs Free Energy (&Delta;<sub>r</sub>G<sup>\'&deg;</sup>): \n")[1].strip()
+    else : 
+        GFE = "Error, database does not have Gibbs Free Energy"
+    return GFE
 
