@@ -9,6 +9,10 @@ http = urllib3.PoolManager();
 
 #direct simply joins the array with slashes and sends request to kegg
 def direct(arg_list):
+        while '' in arg_list:
+                arg_list.remove('');
+        while None in arg_list:
+                arg_list.remove(None);
 	request = "http://rest.kegg.jp/"
 	request += "/".join(arg_list);
 	response = http.request('GET', request).data.decode() #decode() turns it into string
@@ -34,8 +38,8 @@ def find2(database, query): #this is used in cli
 	newstr = direct(['find', database, query])
 	#newstr = newstr.replace("\\t", "\t");
 	newlist = newstr.split("\n");
-	newlist[0] = newlist[0][2:]; #shave off trash at beggining of first element
-	del newlist[len(newlist)-1]; #shave off last element (trash)
+	#newlist[0] = newlist[0][2:]; #shave off trash at beggining of first element
+	#del newlist[len(newlist)-1]; #shave off last element (trash)
 	return(newlist);
 
 def get(query):
@@ -49,7 +53,7 @@ def info(database):
 	text = direct(['info', database]);
 	text = text.replace("\\t", "\t");
 	text = text.replace("\\n", "\n");
-	text = text[2:len(text)-1]; #rm first 2 and last characters (trash)
+	#text = text[2:len(text)-1]; #rm first 2 and last characters (trash)
 	return(text)
 
 #def conv(two_ids)
@@ -69,7 +73,7 @@ def link(database, query):
 #THIS ONLY ENTERS THE FIRST ENTRY FOR SOME REASON 
 def get_extract(query):
 	to_parse = get(query);
-	lines = to_parse.splitlines();	
+	lines = to_parse.splitlines();  
 	ret = {};
 
 	while '' in lines:
@@ -137,7 +141,7 @@ def get_extract(query):
 					else:
 						continue;
 				
-				ret[key].append(d);	
+				ret[key].append(d);     
 		elif (key == "REACTION") and ('Compound' in ret["TYPE"]):
 			ret[key] = [];
 			lines = block.splitlines();
@@ -285,11 +289,11 @@ def reaction_helper(cpd_start, cpdB, reaction, past_reactions, depth, limit):
 		return [False];
 
 def remove_id_prefix(s):
-        i = s.index(':')
-        return s[(i+1):]
+	i = s.index(':')
+	return s[(i+1):]
 
 def get_id(database, obj):
-        templist = find2( database, obj );
+	templist = find2( database, obj );
 	found = False;
 	for i in range(len(templist)):
 		templist2 = templist[i].split('\t')

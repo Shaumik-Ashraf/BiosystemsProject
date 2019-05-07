@@ -22,8 +22,12 @@ help_text = """
 		find <database> <term to search> - returns all entries in database with term specified
 		get <kegg id> - returns information about object with specified kegg id
 		info <database> - returns information about the database
-				set <setting> <value>
-
+		set <setting> <value> - change settings
+		define <database> <name> - will make <name> interchangeable with its kegg id in the cli
+		see-defined (no arguements) - see a list of all defined names/kegg ids
+		see-settings (no arguements) - print settings
+		search-pathway <compound A> <compound B> - depth-first search of biological pathway from A to B
+		
 	The databases in KEGG include but are not limited to:
 		reaction
 		enzyme
@@ -31,13 +35,13 @@ help_text = """
 		compound
 		pathway
 
-		Possible settings to change are:
-				list-limit -> maximum number of elements to output from a list, set to -1 for no limit
-				output-line-limit -> maximum number of lines to output (excluding lists), set to -1 for no limit
-				search-depth-limit -> Equals the base-n logrithm of O(n) of run time of search-pathway; the 
-					bigger this number is, the exponentially larger the loading time. Too high of a number may 
-					improve search results but may also cause the program to crash.
-				verbose -> prints detailed output on what the program is doing, either True/False
+	Possible settings to change are:
+		list-limit -> maximum number of elements to output from a list, set to -1 for no limit
+		output-line-limit -> maximum number of lines to output (excluding lists), set to -1 for no limit
+		search-depth-limit -> Equals the exponent of exponential O(n) run time of search-pathway; the 
+			bigger this number is, the exponentially larger the loading time. Too high of a number may 
+			improve search results but may also cause the program to crash.
+		verbose -> prints detailed output on what the program is doing, either True/False
 				
 	See https://kegg.jp for more information on KEGG.
 """
@@ -61,8 +65,8 @@ def print_text(t, limit):
 		print( t );
 
 def singularize(s):
-        if s.endswith('s'):
-                return s[:len(s)-1]
+	if s.endswith('s'):
+		return s[:len(s)-1]
 
 # ========command-line loop================================
 print( "Start KEGG Command-Line Interface" );
@@ -70,17 +74,17 @@ list_limit = 20;
 output_line_limit = 20;
 depth_limit = 50;
 verbose = False;
-defined = {'water':'C00001', 'H20':'C00001'}
+defined = {'water':'C00001', 'H20':'C00001'};
 print("Settings: " + str( {'list-limit':list_limit, 'output-line-limit':output_line_limit, 'verbose':verbose, 'depth-limit':depth_limit} ) + "\n");
 while 1==1:
 	print("kegg-cli>>", end="");
 	command = input().strip().split(" ");
-	for i in range(len(i)):
-                if i==1:
-                        command[i] = singularize(command[i])
-                if defined.has_key(command[i]):
-                        command[i] = defined[command[i]]
-        
+	for i in range(len(command)):
+		if i==1:
+			command[i] = singularize(command[i])
+		if command[i] in defined.keys():
+			command[i] = defined[command[i]]
+	
 	if command[0] == "help":
 		print(help_text);
 	elif command[0] == "exit":
@@ -134,12 +138,14 @@ while 1==1:
 		print("You mean search-pathway");
 
 	elif command[0] == "define":
-                kid = get_id(command[1], command[2]);
-                kid = remove_id_prefix(kid);
-                defined[command[2]] = kid;
-        elif command[0] == "see-defined":
-                for k in defined.keys():
-                        print( k + ": " + defined[k] );
+		kid = get_id(command[1], command[2]);
+		kid = remove_id_prefix(kid);
+		defined[command[2]] = kid;
+	elif command[0] == "see-defined":
+		for k in defined.keys():
+			print( k + ": " + defined[k] );
+	elif command[0] == "see-settings":
+		print("Settings: " + str({'list-limit':list_limit, 'output-line-limit':output_line_limit, 'verbose':verbose, 'depth-limit':depth_limit}));
 	else:
 		print("Command unrecognized");
 
