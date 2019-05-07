@@ -3,7 +3,7 @@
 # requires: urllib3
 
 import urllib3;
-
+import re
 http = urllib3.PoolManager();
 
 #direct simply joins the array with slashes and sends request to kegg
