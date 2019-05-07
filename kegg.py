@@ -9,13 +9,14 @@ http = urllib3.PoolManager();
 
 #direct simply joins the array with slashes and sends request to kegg
 def direct(arg_list):
-        while '' in arg_list:
-                arg_list.remove('');
-        while None in arg_list:
-                arg_list.remove(None);
-	request = "http://rest.kegg.jp/"
-	request += "/".join(arg_list);
-	response = http.request('GET', request).data.decode() #decode() turns it into string
+	while '' in arg_list:
+		arg_list.remove('');
+	while None in arg_list:
+		arg_list.remove(None);
+	request = "http://rest.kegg.jp/";
+	request += ('/'.join(arg_list));
+	response = http.request('GET', request).data.decode()
+	#decode() turns it into string
 	return(response);
 
 def list2(database):
@@ -61,10 +62,13 @@ def info(database):
 		
 def link(database, query):
 	temptext = direct(['link', database, query])
-	templist = temptext.split('\n')
-	retlist = templist.copy();  #preallocate
+	templist = temptext.splitlines();
+	while '' in templist:
+		templist.remove('');
+	retlist = []
 	for i in range(len(templist)):
-		retlist[i] = templist[i].split('\t')[1]
+		linelist = templist[i].split();
+		retlist.append( linelist[1] )
 	return(retlist);
 
 #get_extract returns a dictionary containing any info
@@ -85,21 +89,32 @@ def get_extract(query):
 	while i < len(lines): #parse keys and blocks
 		if lines[i] == '///':
 			break;
-		elif re.match(r'\s', lines[i], 0).group(0) == lines[i][0]: #if first character is a space
-			blocks[j] += lines[i] #concat strings
+		elif lines[i].startswith(' ') or lines[i].startswith('\t'): #if first character is a space
+			blocks[j] += lines[i].strip(); #concat strings
 		else:
+                        #start a new block
 			j += 1; #start next blocks array element
-			temparray = lines[i].split(); 
+			print( "DEBUG: " + str(lines[i]) );
+			temparray = lines[i].split();
+			while '' in temparray:
+				temparray.remove('');
+			print( "DEBUG: " + str(temparray) );
+			print( "DEBUG: " + str(temparray[1]) );
+			key = temparray[0];
 			ret[temparray[0]] = j;
-			blocks[j] = temparray[1:]
-			if ret[lines[i]] == "ENTRY":
-				tokens = blocks[j].split()
-				ret[lines[i]] = tokens[1];
-				ret["TYPE"] = tokens[2:];
+			del temparray[0];
+			blocks.insert(j, temparray);
+			blocks[j] = " ".join(blocks[j]) #list => string
+			if key == "ENTRY":
+				tokens = blocks[j].split();
+				ret[key] = tokens[0];
+				ret["TYPE"] = tokens[1:];
 		i += 1;
-		
+	print("DEBUG: " + str(ret) )
+	print("DEBUG: " + str(blocks) )
+	
 	for key in ret.keys(): #parse blocks into structured dicts
-		block = blocks[ret[key]]
+		block = blocks[ int(ret[key]) ]
 		if key == '///': #shouldnt occur
 			break;
 		elif key == "ENTRY":
@@ -215,7 +230,7 @@ def A2B(compoundA, compoundB, depth_limit):
 		return solution; #no solution for module based search
 		
 	for md in mdlist:
-		x = module_helper(cpdB, md, [], 0, depth_limit)
+		x = module_helper(idB, md, [], 0, depth_limit)
 		if x[ len(x)-1 ]:
 			#x is solution
 			solution['found'] = True;

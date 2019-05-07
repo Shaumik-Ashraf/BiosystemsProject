@@ -59,14 +59,21 @@ def print_list(lst, limit):
 			print( str(lst[i]) );
 
 def print_text(t, limit):
+	lines = t.splitlines();
 	if limit > 0:
-		print( t[0:limit] );
+		for i in range(limit):
+			if i<len(lines):
+				print( lines[i] )
+			else:
+				break;
 	else:
 		print( t );
 
 def singularize(s):
 	if s.endswith('s'):
-		return s[:len(s)-1]
+		return s[:len(s)-1];
+	else:
+		return s;
 
 # ========command-line loop================================
 print( "Start KEGG Command-Line Interface" );
@@ -79,16 +86,69 @@ print("Settings: " + str( {'list-limit':list_limit, 'output-line-limit':output_l
 while 1==1:
 	print("kegg-cli>>", end="");
 	command = input().strip().split(" ");
+	
 	for i in range(len(command)):
+		if (command[i] in defined.keys()) and (command[0]!="search-pathway"):
+			command[i] = defined[command[i]]
 		if i==1:
 			command[i] = singularize(command[i])
-		if command[i] in defined.keys():
-			command[i] = defined[command[i]]
-	
+
+	if verbose:
+		print( str(command) ) #for debugging
+		
 	if command[0] == "help":
 		print(help_text);
 	elif command[0] == "exit":
 		break;
+	elif command[0] == "list":
+		needs_args(2);
+		if verbose:
+			print( "kegg.list2({0})".format(command[1]) )
+		out = kegg.list2(command[1]);
+		print_list( out, list_limit );
+	elif command[0] == "find":
+		needs_args(3);
+		if verbose:
+			print( "kegg.find2({0},{1})".format(command[1],command[2]) )
+		out = kegg.find2( command[1], command[2] );
+		print_list( out, list_limit );
+	elif command[0] == "get":
+		needs_args(2);
+		if verbose:
+			print( "kegg.get({0})".format(command[1]) )
+		out = kegg.get(command[1]);
+		print_text( out, output_line_limit );
+	elif command[0] == "info":
+		needs_args(2);
+		if verbose:
+			print( "kegg.info({0})".format(command[1]) )
+		out = kegg.info(command[1]);
+		print_text( out, output_line_limit );
+	elif command[0] == "link":
+		needs_args(3);
+		if verbose:
+			print( "kegg.link({0},{1})".format(command[1],command[2]) )
+		out = kegg.link(command[1], command[2]);
+		print_list(out, list_limit);
+	elif command[0] == "extract":
+		needs_args(2);
+		if verbose:
+			print( "kegg.get_extract({0})".format(command[1]) )
+		dct = get_extract(command[1]);
+		print( str(dct) );
+	elif command[0] == "search-pathway":
+		needs_args(3);
+		if verbose:
+			print("search-pathway...")
+		x = kegg.A2B(command[1], command[2], depth_limit);
+		print(str(x));
+	elif command[0] == "define":
+		kid = kegg.get_id(command[1], command[2]);
+		kid = kegg.remove_id_prefix(kid);
+		defined[command[2]] = kid;
+	elif command[0] == "see-defined":
+		for k in defined.keys():
+			print( k + ": " + defined[k] );
 	elif command[0] == "set":
 		if len(command) < 3:
 			print("Usage: set <setting> <value>");
@@ -105,45 +165,6 @@ while 1==1:
 				verbose = False;
 		else:
 			print( command[1] + " unrecognized" );
-	elif command[0] == "list":
-		needs_args(2);
-		out = kegg.list(command[1]);
-		print_list( out, list_limit );
-	elif command[0] == "find":
-		needs_args(3);
-		out = kegg.find2( command[1], command[2] );
-		print_list( out, list_limit );
-	elif command[0] == "get":
-		needs_args(2);
-		out = kegg.get(command[1]);
-		print_text( out, output_line_limit );
-	elif command[0] == "info":
-		needs_args(2);
-		out = kegg.info(command[1]);
-		print_text( out, output_line_limit );
-	elif command[0] == "link":
-		needs_args(2);
-		out = kegg.link(command[1], command[2]);
-		print_list(out, list_limit);
-	elif command[0] == "extract":
-		needs_args(2);
-		if not command[1].numeric():
-			print('Require kegg id')
-		dct = get_extract(command[1]);
-		print( str(dct) );
-	elif command[0] == "search-pathway":
-		print("unimplemented")
-		
-	elif command[0] == "search" and command[1] == "pathway":
-		print("You mean search-pathway");
-
-	elif command[0] == "define":
-		kid = get_id(command[1], command[2]);
-		kid = remove_id_prefix(kid);
-		defined[command[2]] = kid;
-	elif command[0] == "see-defined":
-		for k in defined.keys():
-			print( k + ": " + defined[k] );
 	elif command[0] == "see-settings":
 		print("Settings: " + str({'list-limit':list_limit, 'output-line-limit':output_line_limit, 'verbose':verbose, 'depth-limit':depth_limit}));
 	else:
