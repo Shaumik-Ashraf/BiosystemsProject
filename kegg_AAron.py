@@ -87,14 +87,26 @@ def get_extract(query):
         
 	return ret;
 
-def param(RN):
-    import re
-    newstr = str(http.request('GET', 'http://rest.kegg.jp/get/rn:{RN}').data) #get enzyme number
-    EC = newstr.split("ENZYME")[1].split("\\n")[0].strip()
-    brstr = str(http.request('GET', 'https://www.brenda-enzymes.org/enzyme.php?ecno={EC}').data) #get brenda text
+def GIBBS(RN):
+    newstr = http.request('GET', 'http://rest.kegg.jp/get/rn:{0}'.format(RN)).data.decode() 
+    EC = newstr.split("ENZYME")[1].split("\n")[0].strip() 
+    bcdat = http.request('GET', 'https://biocyc.org/META/NEW-IMAGE?type=EC-NUMBER&object=EC-{0}'.format(EC)).data.decode("utf-8", "ignore")
+    bclink = bcdat.split("Reaction: \n                              \n <br> <a href=\"")[1].split("\" class=\"REACTION\"")[0].strip()
+    brstr = http.request('GET', 'https://biocyc.org{0}'.format(bclink)).data.decode("utf-8", "ignore")
+    if "Standard Gibbs Free Energy" in brstr :
+        GFE = (brstr.split("kcal/mol")[0]).split("Standard Gibbs Free Energy (&Delta;<sub>r</sub>G<sup>\'&deg;</sup>): \n")[1].strip()
+    else : 
+        GFE = "Error, database does not have Gibbs Free Energy"
+    return GFE
 
-    return newstr
-    
+
+   """next steps:
+    1) parse BRENDA database
+    2) test case for metacyc link to find metacyc database
+    3) test case for no link and using rhea instead
+    4) test case for none
+    5) parse metacyc for gibbs
+    """ 
 
 
 """
