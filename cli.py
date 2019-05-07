@@ -134,7 +134,7 @@ while 1==1:
 		needs_args(2);
 		if verbose:
 			print( "kegg.get_extract({0})".format(command[1]) )
-		dct = get_extract(command[1]);
+		dct = kegg.get_extract(command[1]);
 		print( str(dct) );
 	elif command[0] == "search-pathway":
 		needs_args(3);
