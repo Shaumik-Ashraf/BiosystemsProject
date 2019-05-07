@@ -143,6 +143,7 @@ while 1==1:
 		x = kegg.A2B(command[1], command[2], depth_limit);
 		print(str(x));
 	elif command[0] == "define":
+		needs_args(3);
 		kid = kegg.get_id(command[1], command[2]);
 		kid = kegg.remove_id_prefix(kid);
 		defined[command[2]] = kid;
