@@ -90,7 +90,7 @@ def get_extract(query):
 		if lines[i] == '///':
 			break;
 		elif lines[i].startswith(' ') or lines[i].startswith('\t'): #if first character is a space
-			blocks[j] += lines[i].strip(); #concat strings
+			blocks[j] += ('\n' + lines[i].strip()); #concat strings
 		else:
 			#start a new block
 			j += 1; #start next blocks array element
@@ -115,10 +115,10 @@ def get_extract(query):
 	keys2.remove('TYPE');
 	
 	for key in keys2: #parse blocks into structured dicts
-		print("DEBUG: " + key )
-		print("DEBUG: " + str(ret[key]))
-		print("DEBUG: " + blocks[ ret[key] ] )
-		print("DEBUG: " + str(int(ret[key])))
+		#print("DEBUG: " + key )
+		#print("DEBUG: " + str(ret[key]))
+		#print("DEBUG: " + blocks[ ret[key] ] )
+		#print("DEBUG: " + str(int(ret[key])))
 		block = blocks[ret[key]]
 		if key == '///': #shouldnt occur
 			break;
@@ -142,7 +142,10 @@ def get_extract(query):
 				tokens = line.split();
 				while '' in tokens:
 					tokens.remove('');
-					
+				
+				if tokens == []:
+					break;
+
 				if ',' in tokens[0]:
 					d['ID'] = tokens[0].split(',')[0];
 				else:
@@ -152,15 +155,15 @@ def get_extract(query):
 				passed_arrow = False;
 				j = 1;
 				while j < len(tokens): #parsing each token
+					#print('parsing react')
 					if tokens[j] == '->':
 						passed_arrow = True;
 					elif( (not passed_arrow) and (tokens[j] != '+') ):
 						d['REACTANTS'].append(tokens[j]);
 					elif( passed_arrow and (tokens[j] != '+') ):
 						d['PRODUCTS'].append(tokens[j])
-					else:
-						continue;
-				
+					j += 1
+
 				ret[key].append(d);     
 		elif (key == "REACTION") and ('Compound' in ret["TYPE"]):
 			ret[key] = [];
@@ -282,12 +285,13 @@ def module_helper(cpdB, module, past_modules, depth, limit):
 	else:
 		md_data = get_extract(module);
 		rxns = [];
-		for i in md_data['REACTION']:
-			rxns = rxns + [ md_data['REACTION'][i]['id'] ]
+		#print(md_data['REACTION'])
+		for i in range(len(md_data['REACTION'])):
+			rxns = rxns + [ md_data['REACTION'][i]['ID'] ]
 			if cpdB in md_data['REACTION'][i]['PRODUCTS']:
 				return [module];
 
-		rxns = rxns.reverse(); #optimizes for assimilatory pathways
+		rxns.reverse(); #optimizes for assimilatory pathways
 		for r in rxns:
 			next_md_list = link('module', r);
 			for next_module in next_md_list:
