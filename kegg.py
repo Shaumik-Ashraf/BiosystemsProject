@@ -92,7 +92,7 @@ def get_extract(query):
 		elif lines[i].startswith(' ') or lines[i].startswith('\t'): #if first character is a space
 			blocks[j] += lines[i].strip(); #concat strings
 		else:
-                        #start a new block
+			#start a new block
 			j += 1; #start next blocks array element
 			#print( "DEBUG: " + str(lines[i]) );
 			temparray = lines[i].split();
@@ -114,11 +114,14 @@ def get_extract(query):
 	print("DEBUG: " + str(ret[key]))
 	print("DEBUG: " + blocks[ret[key]] )
 	print("DEBUG: " + str(int(ret[key])))
+	keys2 = list(ret.keys());
+	keys2.remove('ENTRY');
+	keys2.remove('TYPE');
 	
-	for key in ret.keys(): #parse blocks into structured dicts
+	for key in keys2: #parse blocks into structured dicts
 		print("DEBUG: " + key )
 		print("DEBUG: " + str(ret[key]))
-		print("DEBUG: " + blocks[ret[key]] )
+		print("DEBUG: " + blocks[ ret[key] ] )
 		print("DEBUG: " + str(int(ret[key])))
 		block = blocks[ret[key]]
 		if key == '///': #shouldnt occur
@@ -194,6 +197,23 @@ def get_extract(query):
 			ret[ key ] = block;
 
 	return ret;
+
+"""IGNORE ME
+def get_extract_module(md):
+	text = get(md)
+	#parse out first line, rest of text intact
+	tup = text.partition('\n');
+	firstline = tup[0];
+	text = tup[2];  #without first line
+	
+	#extract data from first line
+	data = text.split(" \t\n")
+	ret['ENTRY'] = data[1];
+	ret['TYPE'] = data[2:];
+	
+	#abuse regulaur expressions
+	data = re.compile("^[A-Z]{2,}[\s]+").split(text);
+"""
 
 def A2B(compoundA, compoundB, depth_limit):
 	#set variable idA, ask if compoundA is correctly found
@@ -330,14 +350,16 @@ def get_id(database, obj):
 		return( -1 );
 
 def GIBBS(RN): #Finds the Gibbs free energy for any kegg reaction via the reaction number
-    newstr = http.request('GET', 'http://rest.kegg.jp/get/rn:{0}'.format(RN)).data.decode() 
-    EC = newstr.split("ENZYME")[1].split("\n")[0].strip() 
-    bcdat = http.request('GET', 'https://biocyc.org/META/NEW-IMAGE?type=EC-NUMBER&object=EC-{0}'.format(EC)).data.decode("utf-8", "ignore")
-    bclink = bcdat.split("Reaction: \n                              \n <br> <a href=\"")[1].split("\" class=\"REACTION\"")[0].strip()
-    brstr = http.request('GET', 'https://biocyc.org{0}'.format(bclink)).data.decode("utf-8", "ignore")
-    if "Standard Gibbs Free Energy" in brstr :
-        GFE = (brstr.split("kcal/mol")[0]).split("Standard Gibbs Free Energy (&Delta;<sub>r</sub>G<sup>\'&deg;</sup>): \n")[1].strip()
-    else : 
-        GFE = "Error, database does not have Gibbs Free Energy"
-    return GFE
+        newstr = http.request('GET', 'http://rest.kegg.jp/get/rn:{0}'.format(RN)).data.decode() 
+        EC = newstr.split("ENZYME")[1].split("\n")[0].strip() 
+        bcdat = http.request('GET', 'https://biocyc.org/META/NEW-IMAGE?type=EC-NUMBER&object=EC-{0}'.format(EC)).data.decode("utf-8", "ignore")
+        bclink = bcdat.split("Reaction: \n                              \n <br> <a href=\"")[1].split("\" class=\"REACTION\"")[0].strip()
+        brstr = http.request('GET', 'https://biocyc.org{0}'.format(bclink)).data.decode("utf-8", "ignore")
+        if "Standard Gibbs Free Energy" in brstr:
+                GFE = (brstr.split("kcal/mol")[0]).split("Standard Gibbs Free Energy (&Delta;<sub>r</sub>G<sup>\'&deg;</sup>): \n")[1].strip()
+        else: 
+                GFE = "Error, database does not have Gibbs Free Energy"
+	
+        return GFE
+
 
