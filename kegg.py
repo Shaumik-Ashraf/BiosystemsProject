@@ -110,10 +110,6 @@ def get_extract(query):
 				ret[key] = tokens[0];
 				ret["TYPE"] = tokens[1:];
 		i += 1;
-	print("DEBUG: " + str(key) )
-	print("DEBUG: " + str(ret[key]))
-	print("DEBUG: " + blocks[ret[key]] )
-	print("DEBUG: " + str(int(ret[key])))
 	keys2 = list(ret.keys());
 	keys2.remove('ENTRY');
 	keys2.remove('TYPE');
@@ -278,7 +274,7 @@ def A2B(compoundA, compoundB, depth_limit):
 	return solution;
 	
 def module_helper(cpdB, module, past_modules, depth, limit):
-	#print( "Trying " + str(past_modules + [module]) );
+	print( "Trying " + str(past_modules + [module]) );
 	if depth > limit:
 		return [False]
 	elif module in past_modules:
