@@ -147,7 +147,8 @@ def get_extract(query):
 					break;
 
 				if ',' in tokens[0]:
-					d['ID'] = tokens[0].split(',')[0];
+					temp = tokens[0].split(',');
+					d['ID'] = temp[len(temp)-1]
 				else:
 					d['ID'] = tokens[0];
 					#doesn't consider case of RX,RY+RZ
@@ -226,8 +227,6 @@ def A2B(compoundA, compoundB, depth_limit):
 		if in_buffer.upper().startswith('Y'):
 			found = True;
 			break;
-		else:
-			continue;
 	if( not found ):
 		print( '{0} could not be found.'.format(compoundA.capitalize()) )
 		return( -1 );
@@ -245,8 +244,6 @@ def A2B(compoundA, compoundB, depth_limit):
 		if in_buffer.upper().startswith('Y'):
 			found = True;
 			break;
-		else:
-			continue;
 	if( not found ):
 		print( '{0} could not be found.'.format( compoundB.capitalize() ) )
 		return( -1 );
@@ -271,8 +268,8 @@ def A2B(compoundA, compoundB, depth_limit):
 	
 	for md in solution['modules']:
 		md_data = get_extract(md);
-		for i in md_data['REACTION']:
-			r = md_data['REACTION'][i]['id']
+		for i in range(len(md_data['REACTION'])):
+			r = md_data['REACTION'][i]['ID']
 			r_data = get_extract(r);
 			solution['enzymes'].append( r_data['ENZYME'] )
 			solution['reactions'].append(r)
@@ -304,8 +301,6 @@ def module_helper(cpdB, module, past_modules, depth, limit):
 				if x[ len(x)-1 ]: #if last element is not False
 					#found!
 					return x; #returns array of modules
-				else:
-					continue;
 
 		return [False]; #no solutions
 
@@ -329,8 +324,6 @@ def reaction_helper(cpd_start, cpdB, reaction, past_reactions, depth, limit):
 				x = [reaction] + reaction_helper(p, cpdB, next_reaction, past_reactions + [reaction], depth+1, limit);
 				if x[ len(x)-1 ]: #if last element not False
 					return x;
-				else:
-					continue;
 					
 		return [False];
 
@@ -348,8 +341,6 @@ def get_id(database, obj):
 		if in_buffer.upper().startswith('Y'):
 			found = True;
 			return templist2[0];
-		else:
-			continue;
 	if( not found ):
 		print( '{0} could not be found.'.format(compoundA.capitalize()) )
 		return( -1 );
