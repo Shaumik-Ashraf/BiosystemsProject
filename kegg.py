@@ -231,6 +231,8 @@ def A2B(compoundA, compoundB, depth_limit):
 	if( not found ):
 		print( '{0} could not be found.'.format(compoundA.capitalize()) )
 		return( -1 );
+	else:
+		idA = idA.split(':')[1];
 	
 	#set variable idB, ask if compoundB is correctly found
 	templist = find( 'compound/{0}'.format(compoundB) );
@@ -248,6 +250,8 @@ def A2B(compoundA, compoundB, depth_limit):
 	if( not found ):
 		print( '{0} could not be found.'.format( compoundB.capitalize() ) )
 		return( -1 );
+	else:
+		idB = idB.split(':')[1];
 	
 	solution = {'found':False, 'modules':[], 'reactions':[], 'enzymes':[]};
 	mdlist = link("module", idA);
@@ -277,17 +281,18 @@ def A2B(compoundA, compoundB, depth_limit):
 	return solution;
 	
 def module_helper(cpdB, module, past_modules, depth, limit):
-	print( "Trying " + str(past_modules + [module]) );
 	if depth > limit:
 		return [False]
 	elif module in past_modules:
 		return [False]
 	else:
+		print( "Trying " + str(past_modules + [module]) );
 		md_data = get_extract(module);
 		rxns = [];
 		#print(md_data['REACTION'])
 		for i in range(len(md_data['REACTION'])):
 			rxns = rxns + [ md_data['REACTION'][i]['ID'] ]
+			print("\t{0} from ".format(cpdB) + str(md_data['REACTION'][i]) + "?")
 			if cpdB in md_data['REACTION'][i]['PRODUCTS']:
 				return [module];
 
