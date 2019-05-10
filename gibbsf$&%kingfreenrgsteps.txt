@@ -4,10 +4,13 @@ http://rest.kegg.jp/find/reaction/formate
 Then plug that number into the url below:
 https://www.genome.jp/dbget-bin/www_bget?rn:R03907
 
-Pray that the page has a rhea database number. If it does, insert that number into this url:
-https://www.rhea-db.org/reaction?id=12680
-
 Again, pray that this page has a MetaCyc database number and insert that number into this url:
-https://biocyc.org/META/NEW-IMAGE?type=REACTION&object=1.14.99.21-RXN
+https://biocyc.org/META/NEW-IMAGE?type=EC-NUMBER&object=EC-1.17.1.10
 
 search the text of that page for a gibbs free energy reading (if it has one) and there is your reaction energy!
+
+for Km, temp, and ph go to
+https://www.brenda-enzymes.org/enzyme.php?ecno=1.14.99.21
+
+idk man
+https://www.rhea-db.org/reaction?id=12003

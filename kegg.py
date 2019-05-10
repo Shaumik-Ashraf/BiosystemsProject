@@ -250,14 +250,16 @@ def A2B(compoundA, compoundB, depth_limit):
 	else:
 		idB = idB.split(':')[1];
 	
-	solution = {'found':False, 'modules':[], 'reactions':[], 'enzymes':[]};
+	solution = {'found':False, 'modules':[], 'reactions':[], 'enzymes':[], 'Gibbs':0};
 	mdlist = link("module", idA);
 	if( mdlist == [] ):
 		return solution; #no solution for module based search
 	#sollist = []
+	GFE = 0
 	for md in mdlist:
 		x = module_helper(idB, md, [], 0, depth_limit)
 		print(x)
+		n = 0
 		if x[ len(x)-1 ]:
 			#x is solution
 			solution['found'] = True;
@@ -271,9 +273,12 @@ def A2B(compoundA, compoundB, depth_limit):
 					r_data = get_extract(r);
 					solution['enzymes'].append( r_data['ENZYME'] )
 					solution['reactions'].append(r)
+					print(r)
+					solution['Gibbs'], n = GIBBS(r,n)
+					
 				#solution['modules'].append( md )
 				#sollist.append(solution)
-				#break;
+			break;
 		else:
 			#solution not found
 			return( solution );
@@ -323,6 +328,7 @@ def reaction_helper(cpd_start, cpdB, reaction, past_reactions, depth, limit):
 	if cpdB in products:
 		return [reaction];
 	else:
+		print( "Trying " + str(past_reaction + [reaction]) );
 		for p in products:
 			next_rxn_list = link('reaction', p);
 			for next_reaction in next_rxn_list:
@@ -350,17 +356,20 @@ def get_id(database, obj):
 		print( '{0} could not be found.'.format(compoundA.capitalize()) )
 		return( -1 );
 
-def GIBBS(RN): #Finds the Gibbs free energy for any kegg reaction via the reaction number
-        newstr = http.request('GET', 'http://rest.kegg.jp/get/rn:{0}'.format(RN)).data.decode() 
-        EC = newstr.split("ENZYME")[1].split("\n")[0].strip() 
-        bcdat = http.request('GET', 'https://biocyc.org/META/NEW-IMAGE?type=EC-NUMBER&object=EC-{0}'.format(EC)).data.decode("utf-8", "ignore")
-        bclink = bcdat.split("Reaction: \n                              \n <br> <a href=\"")[1].split("\" class=\"REACTION\"")[0].strip()
-        brstr = http.request('GET', 'https://biocyc.org{0}'.format(bclink)).data.decode("utf-8", "ignore")
+def GIBBS(RN,unknownreactions = 0): #Finds the Gibbs free energy for any kegg reaction via the reaction number
+    GFE = 0
+    newstr = http.request('GET', 'http://rest.kegg.jp/get/rn:{0}'.format(RN)).data.decode() 
+    EClist = newstr.split("ENZYME")[1].split("\n")[0].strip().split()
+    for EC in EClist:
+        bcdat = http.request('GET', 'https://biocyc.org/META/NEW-IMAGE?type=EC-NUMBER&object=EC-{0}'.format(EC)).data.decode("utf-8", "ignore");
+        bclink = bcdat.split("Reaction: \n                              \n <br> <a href=\"")[1].split("\" class=\"REACTION\"")[0].strip();
+       	brstr = http.request('GET', 'https://biocyc.org{0}'.format(bclink)).data.decode("utf-8", "ignore")
         if "Standard Gibbs Free Energy" in brstr:
-                GFE = (brstr.split("kcal/mol")[0]).split("Standard Gibbs Free Energy (&Delta;<sub>r</sub>G<sup>\'&deg;</sup>): \n")[1].strip()
+            GFE += float(brstr.split("kcal/mol")[0].split("Standard Gibbs Free Energy")[1].split("\n")[1].strip()) 
         else: 
-                GFE = "Error, database does not have Gibbs Free Energy"
+            unknownreactions += 1
 	
-        return GFE
+    return(GFE,unknownreactions)
+
 
 
