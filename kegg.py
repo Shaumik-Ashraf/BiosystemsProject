@@ -178,7 +178,7 @@ def get_extract(query):
 					ret[key].append(token)
 		elif (key == "EQUATION") and ('Reaction' in ret["TYPE"]):
 			ret[key] = {'REACTANTS':[], 'PRODUCTS':[], 'RATIOS':[]}
-			tokens = block.trim.split();
+			tokens = block.strip().split();
 			while '' in tokens:
 				tokens.remove('')
 			
@@ -186,7 +186,7 @@ def get_extract(query):
 			for token in tokens:
 				if token == "<=>":
 					passed_arrow = True;
-				elif isdigit(token):
+				elif token.isdigit():
 					ret[key]['RATIOS'].append(token);
 				elif( token.startswith('C') and (not passed_arrow)):
 					ret[key]['REACTANTS'].append( token );
