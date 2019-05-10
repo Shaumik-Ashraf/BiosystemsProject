@@ -254,26 +254,31 @@ def A2B(compoundA, compoundB, depth_limit):
 	mdlist = link("module", idA);
 	if( mdlist == [] ):
 		return solution; #no solution for module based search
-		
+	#sollist = []
 	for md in mdlist:
 		x = module_helper(idB, md, [], 0, depth_limit)
+		print(x)
 		if x[ len(x)-1 ]:
 			#x is solution
 			solution['found'] = True;
 			solution['modules'] = x;
-			break;
+			for md in solution['modules']:
+				md_data = get_extract(md);
+				print(solution['modules'])
+				for i in range(len(md_data['REACTION'])):
+					print(i)
+					r = md_data['REACTION'][i]['ID']
+					r_data = get_extract(r);
+					solution['enzymes'].append( r_data['ENZYME'] )
+					solution['reactions'].append(r)
+				#solution['modules'].append( md )
+				#sollist.append(solution)
+				#break;
 		else:
 			#solution not found
 			return( solution );
 	
-	for md in solution['modules']:
-		md_data = get_extract(md);
-		for i in range(len(md_data['REACTION'])):
-			r = md_data['REACTION'][i]['ID']
-			r_data = get_extract(r);
-			solution['enzymes'].append( r_data['ENZYME'] )
-			solution['reactions'].append(r)
-		solution['modules'].append( md )
+	
 	
 	return solution;
 	
