@@ -286,7 +286,6 @@ def A2Br(compoundA, compoundB, depth_limit):
 		
 	return search_reactions(idA, idB, depth_limit );
 
-
 def search_modules(idA, idB, depth_limit, fill_solution, do_gibbs = False ):
 
 	solution = {'found':False, 'modules':[], 'reactions':[], 'enzymes':[], 'Gibbs':0};
@@ -374,6 +373,9 @@ def module_helper(cpdB, module, past_modules, depth, limit):
 
 		return [False]; #no solutions
 
+#The following compounds are blacklisted becuase they are too common
+#water, oxygen, carbon dioxide
+blacklisted_compounds = ['C00001', 'C00007', 'C00011']
 def reaction_helper(cpdB, reaction, past_reactions, depth, limit):
 	print( "Trying " + str(past_reactions + [reaction]) );
 	if depth > limit:
@@ -389,12 +391,13 @@ def reaction_helper(cpdB, reaction, past_reactions, depth, limit):
 	else:
 		print( "Trying " + str(past_reactions + [reaction]) );
 		for p in products:
-			next_rxn_list = link('reaction', p);
-			for next_reaction in next_rxn_list:
-				x = [reaction] + reaction_helper(cpdB, next_reaction, past_reactions + [reaction], depth+1, limit);
-				if x[ len(x)-1 ]: #if last element not False
-					return x;
-					
+			if p not in blacklisted_compounds:
+				next_rxn_list = link('reaction', p);
+				for next_reaction in next_rxn_list:
+					x = [reaction] + reaction_helper(cpdB, next_reaction, past_reactions + [reaction], (depth+1), limit);
+					if x[-1]: #if last element not False
+						return x;
+						
 		return [False];
 
 def remove_id_prefix(s):
@@ -439,3 +442,4 @@ def GIBBS(RN,unknownreactions = 0): #Finds the Gibbs free energy for any kegg re
     except:
     	unknownreactions += 1
     	return(GFE,unknownreactions)
+
