@@ -1,11 +1,12 @@
 # kegg.py
 # database_access_code.py consolodated into a module
-# requires: urllib3
+# requires: urllib3, certifi (usually installed with urllib3), requests
 
 import urllib3
 import re
 import threading
 import time
+# install certifi
 import requests
 
 requests.packages.urllib3.disable_warnings()
@@ -202,6 +203,7 @@ def get_extract(query):
 
 def A2B(compoundA, compoundB, depth_limit):
 	#set variable idA, ask if compoundA is correctly found
+	idAlist = []
 	if re.compile('C\d{5,}').match(compoundA):  #cpd id was provided
 		idA = compoundA
 	else:
@@ -219,8 +221,11 @@ def A2B(compoundA, compoundB, depth_limit):
 			print( '{0} could not be found.'.format(compoundA.capitalize()) )
 			return( -1 );
 		else:
-			idA = idA.split(':')[1];
-		
+			idAlist.append(idA.split(':')[1])
+			extras = get_extract(idA)
+			if "COMMENT" in extras:
+				for moreidAs in re.search("C\d\d\d\d\d", extras["COMMENT"]).groups():
+					idAlist.append(moreidAs)
 	#set variable idB, ask if compoundB is correctly found
 	if re.compile('C\d{5,}').match(compoundB):
 		idB = compoundB;
@@ -241,10 +246,11 @@ def A2B(compoundA, compoundB, depth_limit):
 		else:
 			idB = idB.split(':')[1];
 		
-	return search_modules(idA, idB, depth_limit, True, False);
+	return search_modules(idAlist, idB, depth_limit, True, False);
 
 def A2Br(compoundA, compoundB, depth_limit):
 	#set variable idA, ask if compoundA is correctly found
+	idAlist = []
 	if re.compile('C\d{5,}').match(compoundA):  #cpd id was provided
 		idA = compoundA
 	else:
@@ -262,8 +268,11 @@ def A2Br(compoundA, compoundB, depth_limit):
 			print( '{0} could not be found.'.format(compoundA.capitalize()) )
 			return( -1 );
 		else:
-			idA = idA.split(':')[1];
-		
+			idAlist.append(idA.split(':')[1])
+			extras = get_extract(idA)
+			if "COMMENT" in extras:
+				for moreidAs in re.search("C\d\d\d\d\d", extras["COMMENT"]).groups():
+					idAlist.append(moreidAs)
 	#set variable idB, ask if compoundB is correctly found
 	if re.compile('C\d{5,}').match(compoundB):
 		idB = compoundB;
@@ -284,62 +293,59 @@ def A2Br(compoundA, compoundB, depth_limit):
 		else:
 			idB = idB.split(':')[1];
 		
-	return search_reactions(idA, idB, depth_limit );
+	return search_reactions(idAlist, idB, depth_limit );
 
 
-def search_modules(idA, idB, depth_limit, fill_solution, do_gibbs = False ):
+def search_modules(idAlist, idB, depth_limit, fill_solution, do_gibbs = False ):
 
 	solution = {'found':False, 'modules':[], 'reactions':[], 'enzymes':[], 'Gibbs':0};
-	mdlist = link("module", idA);
-	if( mdlist == [] ):
-		return solution; #no solution for module based search
-	#sollist = []
-	GFE = 0
-	for md in mdlist:
-		x = module_helper(idB, md, [], 0, depth_limit)
-		print(x)
-		n = 0
-		if x[ len(x)-1 ]:  #x is solution
-			solution['found'] = True;
-			print("Solution found!");
-			solution['modules'] = x;
-			if fill_solution:
-				print("Filling in useful information...");
-				for md in solution['modules']:
-					md_data = get_extract(md);
-					print(solution['modules'])
-					for i in range(len(md_data['REACTION'])):
-						#print(i)
-						r = md_data['REACTION'][i]['ID']
-						r_data = get_extract(r);
-						solution['enzymes'].append( r_data['ENZYME'] )
-						solution['reactions'].append(r)
-						if do_gibbs:
-							print("Hacking several other databases for Gibbs Free Energy ({0})".format(i));
-							solution['Gibbs'], n = GIBBS(r,n)
-
-			#end if
-			break; #break out of for md in mdlist
-		else:
-			#solution not found
-			return( solution );
+	for idA in idAlist:
+		mdlist = link("module", idA);
+		if( mdlist == [] ):
+			return solution; #no solution for module based search
+		#sollist = []
+		GFE = 0
+		for md in mdlist:
+			x = module_helper(idB, md, [], 0, depth_limit)
+			print(x)
+			n = 0
+			if x[ len(x)-1 ]:  #x is solution
+				solution['found'] = True;
+				print("Solution found!");
+				solution['modules'] = x;
+				if fill_solution:
+					print("Filling in useful information...");
+					for md in solution['modules']:
+						md_data = get_extract(md);
+						print(solution['modules'])
+						for i in range(len(md_data['REACTION'])):
+							#print(i)
+							r = md_data['REACTION'][i]['ID']
+							r_data = get_extract(r);
+							solution['enzymes'].append( r_data['ENZYME'] )
+							solution['reactions'].append(r)
+							if do_gibbs:
+								print("Hacking several other databases for Gibbs Free Energy ({0})".format(i));
+								solution['Gibbs'], n = GIBBS(r,n)
+				break; #break out of for md in mdlist
 
 	return solution;  #I do not believe this ever gets called
 
-def search_reactions(cpdA_id, cpdB_id, depth_limit):
-	solution = {"found":False, "reactions":[], "enzymes":[], "Gibbs":0}
-	past_reactions = []
-	reactions = link("reaction", cpdA_id);
-	if len(reactions)==0:
-		return solution; #no solutions
-	
-	for rn in reactions:
-		solution["reactions"] = reaction_helper(cpdB_id, rn, past_reactions, 0, depth_limit)
-		if solution["reactions"][ len(solution["reactions"])-1 ]: #if last reaction is not false:
-			solution['found'] = True;
-			return solution;
-		else:
-			past_reactions.append(rn);
+def search_reactions(cpdA_idlist, cpdB_id, depth_limit):
+	for cpdA_id in cpdA_idlist:
+		solution = {"found":False, "reactions":[], "enzymes":[], "Gibbs":0}
+		past_reactions = []
+		reactions = link("reaction", cpdA_id);
+		if len(reactions)==0:
+			return solution; #no solutions
+		
+		for rn in reactions:
+			solution["reactions"] = reaction_helper(cpdB_id, rn, past_reactions, 0, depth_limit)
+			if solution["reactions"][ len(solution["reactions"])-1 ]: #if last reaction is not false:
+				solution['found'] = True;
+				return solution;
+			else:
+				past_reactions.append(rn);
 			
 	
 	#if below runs then solution wasn't found
@@ -376,22 +382,23 @@ def module_helper(cpdB, module, past_modules, depth, limit):
 
 def reaction_helper(cpdB, reaction, past_reactions, depth, limit):
 	print( "Trying " + str(past_reactions + [reaction]) );
-	if depth > limit:
+	print(depth, limit)
+	if (depth > limit) :
 		return [False];
-	if reaction in past_reactions:
+	if (reaction in past_reactions):
 		return [False];
 	rxn_data = get_extract(reaction);
-	if cpdB not in rxn_data['EQUATION']['REACTANTS']:
+	if (cpdB not in rxn_data['EQUATION']['REACTANTS']):
 		return [False];
 	products = rxn_data['EQUATION']['PRODUCTS'];
-	if cpdB in products:
+	if (cpdB in products):
 		return [reaction];
 	else:
 		print( "Trying " + str(past_reactions + [reaction]) );
 		for p in products:
 			next_rxn_list = link('reaction', p);
 			for next_reaction in next_rxn_list:
-				x = [reaction] + reaction_helper(cpdB, next_reaction, past_reactions + [reaction], depth+1, limit);
+				x = [reaction] + reaction_helper(cpdB, next_reaction, past_reactions + [reaction], depth+1 , limit);
 				if x[ len(x)-1 ]: #if last element not False
 					return x;
 					
