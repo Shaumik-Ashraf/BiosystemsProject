@@ -25,7 +25,7 @@ class Kthread(threading.Thread):
 		else:
 			self.name = "kthread-{0}-{1}".format(thread_id, "reactions");
 		
-		kthread.count++;
+		kthread.count += 1;
 	
 	def run(self):
 		if rn_or_md == Kthread.FOR_MODULES:
