@@ -34,7 +34,6 @@ help_text = """
 	The databases in KEGG include but are not limited to:
 		reaction
 		enzyme
-		genes
 		compound
 		pathway
 
@@ -43,7 +42,7 @@ help_text = """
 		output-line-limit -> maximum number of lines to output (excluding lists), set to -1 for no limit
 		search-depth-limit -> Equals the exponent of exponential O(n) run time of search-pathway; the 
 			bigger this number is, the exponentially larger the loading time. Too high of a number may 
-			improve search results but may also cause the program to crash.
+			improve search results but will exponentially increase search time.
 		verbose -> prints detailed output on what the program is doing, either True/False
 				
 	See https://kegg.jp for more information on KEGG.
