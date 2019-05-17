@@ -357,19 +357,23 @@ def get_id(database, obj):
 		return( -1 );
 
 def GIBBS(RN,unknownreactions = 0): #Finds the Gibbs free energy for any kegg reaction via the reaction number
-    GFE = 0
-    newstr = http.request('GET', 'http://rest.kegg.jp/get/rn:{0}'.format(RN)).data.decode() 
-    EClist = newstr.split("ENZYME")[1].split("\n")[0].strip().split()
-    for EC in EClist:
-        bcdat = http.request('GET', 'https://biocyc.org/META/NEW-IMAGE?type=EC-NUMBER&object=EC-{0}'.format(EC)).data.decode("utf-8", "ignore");
-        bclink = bcdat.split("Reaction: \n                              \n <br> <a href=\"")[1].split("\" class=\"REACTION\"")[0].strip();
-       	brstr = http.request('GET', 'https://biocyc.org{0}'.format(bclink)).data.decode("utf-8", "ignore")
-        if "Standard Gibbs Free Energy" in brstr:
-            GFE += float(brstr.split("kcal/mol")[0].split("Standard Gibbs Free Energy")[1].split("\n")[1].strip()) 
-        else: 
-            unknownreactions += 1
-	
-    return(GFE,unknownreactions)
-
-
+    #try:
+    	GFE = 0
+    	newstr = http.request('GET', 'http://rest.kegg.jp/get/rn:{0}'.format(RN)).data.decode() 
+    	EClist = newstr.split("ENZYME")[1].split("\n")[0].strip().split()
+    	for EC in EClist:
+    		if(not re.search("\d[.]\d[.]\d[.]\d", EC)) : 
+    			newEC = re.search("\d[.]\d[.]\d[.]\d", http.request('GET', 'http://rest.kegg.jp/get/rn:{0}'.format(RN)).data.decode()).group()
+    		else:
+    			newEC = EC
+    		bcdat = http.request('GET', 'https://biocyc.org/META/NEW-IMAGE?type=EC-NUMBER&object=EC-{0}'.format(newEC)).data.decode("utf-8", "ignore");
+    		bclink = bcdat.split("Reaction:")[1].split("\n <br> <a href=\"")[1].split("\" class=\"REACTION\"")[0].strip();
+    		brstr = http.request('GET', 'https://biocyc.org{0}'.format(bclink)).data.decode("utf-8", "ignore")
+    		if "Standard Gibbs Free Energy" in brstr:
+    			GFE += float(brstr.split("kcal/mol")[0].split("Standard Gibbs Free Energy")[1].split("\n")[1].strip()) 
+    		else: 
+    			unknownreactions += 1
+    	return(GFE,unknownreactions)
+    #except:
+    #	return(float(0),float(1))
 
