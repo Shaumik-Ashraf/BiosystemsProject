@@ -29,6 +29,7 @@ help_text = """
 		see-defined (no arguements) - see a list of all defined names/kegg ids
 		see-settings (no arguements) - print settings
 		search-pathway <compound A> <compound B> - depth-first search of biological pathway from A to B
+		search-reaction <compound A> <compound B> - depth-first search of reaction series from A to B
 		
 	The databases in KEGG include but are not limited to:
 		reaction
