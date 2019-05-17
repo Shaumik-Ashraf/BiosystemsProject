@@ -246,7 +246,7 @@ while 1==1:
 		defined[command[2]] = kid;
 	elif command[0] == "see-defined":
 		for k in defined.keys():
-			print( k + ": " + defined[k] );
+			print( k + ": " + str(defined[k]) );
 	elif command[0] == "set":
 		if len(command) < 3:
 			print("Usage: set <setting> <value>");

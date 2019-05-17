@@ -71,10 +71,8 @@ def link(database, query):
 		retlist.append( linelist[1] )
 	return(retlist);
 
-#get_extract returns a dictionary containing any info
-#provided in from a get command
-#i.e.: get/md:M00377 => { "ENTRY":M00377, "NAME":"Reductive ... "REACTION":{"rnxxx":[[a,b][c,d]]}}
-#THIS ONLY ENTERS THE FIRST ENTRY FOR SOME REASON 
+#get_extract returns a dictionary containing any info rest.kegg.jp/get/* returns
+#i.e.: get/md:M00377 => { "ENTRY":"M00377" "NAME":"Reductive ... "REACTION":{"rnxxx":[[a,b][c,d]]}}
 def get_extract(query):
 	to_parse = get(query);
 	lines = to_parse.splitlines();  
@@ -200,42 +198,92 @@ def get_extract(query):
 
 def A2B(compoundA, compoundB, depth_limit):
 	#set variable idA, ask if compoundA is correctly found
-	templist = find( 'compound/{0}'.format(compoundA) );
-	found = False;
-	for i in range(len(templist)):
-		templist2 = templist[i].split('\t')
-		idA = templist2[0]
-		print( 'Is your first compound also known as: {0}? [y/n]'.format(templist2[1]) )
-		in_buffer = input();
-		if in_buffer.upper().startswith('Y'):
-			found = True;
-			break;
-	if( not found ):
-		print( '{0} could not be found.'.format(compoundA.capitalize()) )
-		return( -1 );
+	if re.compile('C\d{5,}').match(compoundA):  #cpd id was provided
+		idA = compoundA
 	else:
-		idA = idA.split(':')[1];
-	
+		templist = find( 'compound/{0}'.format(compoundA) );
+		found = False;
+		for i in range(len(templist)):
+			templist2 = templist[i].split('\t')
+			idA = templist2[0]
+			print( 'Is your first compound also known as: {0}? [y/n]'.format(templist2[1]) )
+			in_buffer = input();
+			if in_buffer.upper().startswith('Y'):
+				found = True;
+				break;
+		if( not found ):
+			print( '{0} could not be found.'.format(compoundA.capitalize()) )
+			return( -1 );
+		else:
+			idA = idA.split(':')[1];
+		
 	#set variable idB, ask if compoundB is correctly found
-	templist = find( 'compound/{0}'.format(compoundB) );
-	found = False;
-	for i in range(len(templist)):
-		templist2 = templist[i].split('\t')
-		idB = templist2[0]
-		print( 'Is your last compound also known as: {0}? [y/n]'.format(templist2[1]) )
-		in_buffer = input();
-		if in_buffer.upper().startswith('Y'):
-			found = True;
-			break;
-	if( not found ):
-		print( '{0} could not be found.'.format( compoundB.capitalize() ) )
-		return( -1 );
+	if re.compile('C\d{5,}').match(compoundB):
+		idB = compoundB;
 	else:
-		idB = idB.split(':')[1];
+		templist = find( 'compound/{0}'.format(compoundB) );
+		found = False;
+		for i in range(len(templist)):
+			templist2 = templist[i].split('\t')
+			idB = templist2[0]
+			print( 'Is your last compound also known as: {0}? [y/n]'.format(templist2[1]) )
+			in_buffer = input();
+			if in_buffer.upper().startswith('Y'):
+				found = True;
+				break;
+		if( not found ):
+			print( '{0} could not be found.'.format( compoundB.capitalize() ) )
+			return( -1 );
+		else:
+			idB = idB.split(':')[1];
+		
+	return search_modules(idA, idB, depth_limit, True, False);
+
+def A2Br(compoundA, compoundB, depth_limit):
+	#set variable idA, ask if compoundA is correctly found
+	if re.compile('C\d{5,}').match(compoundA):  #cpd id was provided
+		idA = compoundA
+	else:
+		templist = find( 'compound/{0}'.format(compoundA) );
+		found = False;
+		for i in range(len(templist)):
+			templist2 = templist[i].split('\t')
+			idA = templist2[0]
+			print( 'Is your first compound also known as: {0}? [y/n]'.format(templist2[1]) )
+			in_buffer = input();
+			if in_buffer.upper().startswith('Y'):
+				found = True;
+				break;
+		if( not found ):
+			print( '{0} could not be found.'.format(compoundA.capitalize()) )
+			return( -1 );
+		else:
+			idA = idA.split(':')[1];
+		
+	#set variable idB, ask if compoundB is correctly found
+	if re.compile('C\d{5,}').match(compoundB):
+		idB = compoundB;
+	else:
+		templist = find( 'compound/{0}'.format(compoundB) );
+		found = False;
+		for i in range(len(templist)):
+			templist2 = templist[i].split('\t')
+			idB = templist2[0]
+			print( 'Is your last compound also known as: {0}? [y/n]'.format(templist2[1]) )
+			in_buffer = input();
+			if in_buffer.upper().startswith('Y'):
+				found = True;
+				break;
+		if( not found ):
+			print( '{0} could not be found.'.format( compoundB.capitalize() ) )
+			return( -1 );
+		else:
+			idB = idB.split(':')[1];
+		
+	return search_reactions(idA, idB, depth_limit );
+
 	
-	return search_modules(idA, idB, depth_limit, True, True);
-	
-def search_modules(idA, idB, depth_limit, fill_solution, do_gibbs):
+def search_modules(idA, idB, depth_limit):
 	solution = {'found':False, 'modules':[], 'reactions':[], 'enzymes':[], 'Gibbs':0};
 	mdlist = link("module", idA);
 	if( mdlist == [] ):
@@ -246,8 +294,7 @@ def search_modules(idA, idB, depth_limit, fill_solution, do_gibbs):
 		x = module_helper(idB, md, [], 0, depth_limit)
 		print(x)
 		n = 0
-		if x[ len(x)-1 ]:
-			#x is solution
+		if x[ len(x)-1 ]:  #x is solution
 			solution['found'] = True;
 			print("Solution found!");
 			solution['modules'] = x;
@@ -258,13 +305,14 @@ def search_modules(idA, idB, depth_limit, fill_solution, do_gibbs):
 					print(solution['modules'])
 					for i in range(len(md_data['REACTION'])):
 						#print(i)
-						print("Hacking several other databases for Gibbs Free Energy ({0})".format(i));
 						r = md_data['REACTION'][i]['ID']
 						r_data = get_extract(r);
 						solution['enzymes'].append( r_data['ENZYME'] )
 						solution['reactions'].append(r)
-						#print(r)
-						solution['Gibbs'], n = GIBBS(r,n)
+						if do_gibbs:
+							print("Hacking several other databases for Gibbs Free Energy ({0})".format(i));
+							solution['Gibbs'], n = GIBBS(r,n)
+
 			#end if
 			break; #break out of for md in mdlist
 		else:
@@ -273,8 +321,7 @@ def search_modules(idA, idB, depth_limit, fill_solution, do_gibbs):
 
 	return solution;  #I do not believe this ever gets called
 
-
-def A2Br(cpdA_id, cpdB_id, depth_limit):
+def search_reactions(cpdA_id, cpdB_id, depth_limit):
 	solution = {"found":False, "reactions":[], "enzymes":[], "Gibbs":0}
 	past_reactions = []
 	reactions = link("reaction", cpdA_id);
@@ -282,20 +329,19 @@ def A2Br(cpdA_id, cpdB_id, depth_limit):
 		return solution; #no solutions
 	
 	for rn in reactions:
-		solution[reactions] = reaction_helper(cpdB_id, rn, past_reactions, 0, depth_limit)
-		if solution[reactions][ len(solution[reaction])-1 ]: #if last reaction is not false:
+		solution["reactions"] = reaction_helper(cpdB_id, rn, past_reactions, 0, depth_limit)
+		if solution["reactions"][ len(solution["reactions"])-1 ]: #if last reaction is not false:
 			solution['found'] = True;
 			return solution;
 		else:
 			past_reactions.append(rn);
-			continue;
+			
 	
 	#if below runs then solution wasn't found
 	solution['reactions'] = [];
 	solution['enzymes'] = [];
 	return(solution);
 		
-
 def module_helper(cpdB, module, past_modules, depth, limit):
 	if depth > limit:
 		return [False]
@@ -324,7 +370,7 @@ def module_helper(cpdB, module, past_modules, depth, limit):
 		return [False]; #no solutions
 
 def reaction_helper(cpdB, reaction, past_reactions, depth, limit):
-	#print( "Trying " + str(past_reactions + [reaction]) );
+	print( "Trying " + str(past_reactions + [reaction]) );
 	if depth > limit:
 		return [False];
 	if reaction in past_reactions:
@@ -336,11 +382,11 @@ def reaction_helper(cpdB, reaction, past_reactions, depth, limit):
 	if cpdB in products:
 		return [reaction];
 	else:
-		print( "Trying " + str(past_reaction + [reaction]) );
+		print( "Trying " + str(past_reactions + [reaction]) );
 		for p in products:
 			next_rxn_list = link('reaction', p);
 			for next_reaction in next_rxn_list:
-				x = [reaction] + reaction_helper(p, cpdB, next_reaction, past_reactions + [reaction], depth+1, limit);
+				x = [reaction] + reaction_helper(cpdB, next_reaction, past_reactions + [reaction], depth+1, limit);
 				if x[ len(x)-1 ]: #if last element not False
 					return x;
 					
