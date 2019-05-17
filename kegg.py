@@ -345,8 +345,7 @@ def search_reactions(cpdA_idlist, cpdB_id, depth_limit):
 				return solution;
 			else:
 				past_reactions.append(rn);
-			
-	
+				
 	#if below runs then solution wasn't found
 	solution['reactions'] = [];
 	solution['enzymes'] = [];
@@ -386,7 +385,7 @@ blacklisted_compounds = ['C00001', 'C00007', 'C00011']
 def reaction_helper(cpdB, reaction, past_reactions, depth, limit):
 	print( "Trying " + str(past_reactions + [reaction]) );
 	print(depth, limit)
-	if (depth > limit) :
+	if (depth > limit):
 		return [False];
 	if (reaction in past_reactions):
 		return [False];

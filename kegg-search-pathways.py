@@ -15,7 +15,7 @@ def search_modules_with_threads(idA, idB, depth_limit, fill_solution, do_gibbs =
 	else:
 		threads_to_spawn = min(max_threads, len(mdlist));
 		for i in range(threads_to_spawn):
-			
+			threads[i] = Kthread()
 
 	for md in mdlist:
 		x = module_helper(idB, md, [], 0, depth_limit)
