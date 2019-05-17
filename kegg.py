@@ -383,10 +383,11 @@ def module_helper(cpdB, module, past_modules, depth, limit):
 #The following compounds are blacklisted becuase they are too common
 #water, oxygen, carbon dioxide
 blacklisted_compounds = ['C00001', 'C00007', 'C00011']
-def reaction_helper(cpdB, reaction, past_reactions, depth, limit):
+def reaction_helper(cpdB, reaction, past_reactions, rdepth, limit):
 	print( "Trying " + str(past_reactions + [reaction]) );
-	print(depth, limit)
-	if (depth > limit) :
+	#print(len(past_reactions))
+	#print(rdepth, limit)
+	if (len(past_reactions) > limit) :
 		return [False];
 	if (reaction in past_reactions):
 		return [False];
@@ -402,7 +403,7 @@ def reaction_helper(cpdB, reaction, past_reactions, depth, limit):
 			if p not in blacklisted_compounds:
 				next_rxn_list = link('reaction', p);
 				for next_reaction in next_rxn_list:
-					x = [reaction] + reaction_helper(cpdB, next_reaction, past_reactions + [reaction], (depth+1), limit);
+					x = [reaction] + reaction_helper(cpdB, next_reaction, past_reactions + [reaction], (rdepth+1), limit);
 					if x[-1]: #if last element not False
 						return x;
 
