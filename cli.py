@@ -127,7 +127,7 @@ def singularize(s):
 print( "Start KEGG Command-Line Interface" );
 list_limit = 20;
 output_line_limit = 20;
-depth_limit = 50;
+depth_limit = 10;
 verbose = False;
 defined = {'water':'C00001', 'H20':'C00001'};
 print("Settings: " + str( {'list-limit':list_limit, 'output-line-limit':output_line_limit, 'verbose':verbose, 'depth-limit':depth_limit} ) + "\n");
