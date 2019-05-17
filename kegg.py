@@ -170,7 +170,7 @@ def get_extract(query):
 			ret[key] = [];
 			lines = block.splitlines();
 			for each in lines:
-				line = each.trim;
+				line = each.strip();
 				tokens = line.split();
 				while '' in tokens:
 					tokens.remove('')
@@ -197,23 +197,6 @@ def get_extract(query):
 			ret[ key ] = block;
 
 	return ret;
-
-"""IGNORE ME
-def get_extract_module(md):
-	text = get(md)
-	#parse out first line, rest of text intact
-	tup = text.partition('\n');
-	firstline = tup[0];
-	text = tup[2];  #without first line
-	
-	#extract data from first line
-	data = text.split(" \t\n")
-	ret['ENTRY'] = data[1];
-	ret['TYPE'] = data[2:];
-	
-	#abuse regulaur expressions
-	data = re.compile("^[A-Z]{2,}[\s]+").split(text);
-"""
 
 def A2B(compoundA, compoundB, depth_limit):
 	#set variable idA, ask if compoundA is correctly found
@@ -250,6 +233,9 @@ def A2B(compoundA, compoundB, depth_limit):
 	else:
 		idB = idB.split(':')[1];
 	
+	return search_modules(idA, idB, depth_limit, True, True);
+	
+def search_modules(idA, idB, depth_limit, fill_solution, do_gibbs):
 	solution = {'found':False, 'modules':[], 'reactions':[], 'enzymes':[], 'Gibbs':0};
 	mdlist = link("module", idA);
 	if( mdlist == [] ):
@@ -263,30 +249,53 @@ def A2B(compoundA, compoundB, depth_limit):
 		if x[ len(x)-1 ]:
 			#x is solution
 			solution['found'] = True;
+			print("Solution found!");
 			solution['modules'] = x;
-			for md in solution['modules']:
-				md_data = get_extract(md);
-				print(solution['modules'])
-				for i in range(len(md_data['REACTION'])):
-					print(i)
-					r = md_data['REACTION'][i]['ID']
-					r_data = get_extract(r);
-					solution['enzymes'].append( r_data['ENZYME'] )
-					solution['reactions'].append(r)
-					print(r)
-					solution['Gibbs'], n = GIBBS(r,n)
-					
-				#solution['modules'].append( md )
-				#sollist.append(solution)
-			break;
+			if fill_solution:
+				print("Filling in useful information...");
+				for md in solution['modules']:
+					md_data = get_extract(md);
+					print(solution['modules'])
+					for i in range(len(md_data['REACTION'])):
+						#print(i)
+						print("Hacking several other databases for Gibbs Free Energy ({0})".format(i));
+						r = md_data['REACTION'][i]['ID']
+						r_data = get_extract(r);
+						solution['enzymes'].append( r_data['ENZYME'] )
+						solution['reactions'].append(r)
+						#print(r)
+						solution['Gibbs'], n = GIBBS(r,n)
+			#end if
+			break; #break out of for md in mdlist
 		else:
 			#solution not found
 			return( solution );
+
+	return solution;  #I do not believe this ever gets called
+
+
+def A2Br(cpdA_id, cpdB_id, depth_limit):
+	solution = {"found":False, "reactions":[], "enzymes":[], "Gibbs":0}
+	past_reactions = []
+	reactions = link("reaction", cpdA_id);
+	if len(reactions)==0:
+		return solution; #no solutions
 	
+	for rn in reactions:
+		solution[reactions] = reaction_helper(cpdB_id, rn, past_reactions, 0, depth_limit)
+		if solution[reactions][ len(solution[reaction])-1 ]: #if last reaction is not false:
+			solution['found'] = True;
+			return solution;
+		else:
+			past_reactions.append(rn);
+			continue;
 	
-	
-	return solution;
-	
+	#if below runs then solution wasn't found
+	solution['reactions'] = [];
+	solution['enzymes'] = [];
+	return(solution);
+		
+
 def module_helper(cpdB, module, past_modules, depth, limit):
 	if depth > limit:
 		return [False]
@@ -299,7 +308,7 @@ def module_helper(cpdB, module, past_modules, depth, limit):
 		#print(md_data['REACTION'])
 		for i in range(len(md_data['REACTION'])):
 			rxns = rxns + [ md_data['REACTION'][i]['ID'] ]
-			print("\t{0} from ".format(cpdB) + str(md_data['REACTION'][i]) + "?")
+			print("\tis {0} in products of".format(cpdB) + str(md_data['REACTION'][i]) + "?")
 			if cpdB in md_data['REACTION'][i]['PRODUCTS']:
 				return [module];
 
@@ -314,15 +323,14 @@ def module_helper(cpdB, module, past_modules, depth, limit):
 
 		return [False]; #no solutions
 
-
-def reaction_helper(cpd_start, cpdB, reaction, past_reactions, depth, limit):
+def reaction_helper(cpdB, reaction, past_reactions, depth, limit):
 	#print( "Trying " + str(past_reactions + [reaction]) );
 	if depth > limit:
 		return [False];
 	if reaction in past_reactions:
 		return [False];
 	rxn_data = get_extract(reaction);
-	if cpd_start not in rxn_data['EQUATION']['REACTANTS']:
+	if cpdB not in rxn_data['EQUATION']['REACTANTS']:
 		return [False];
 	products = rxn_data['EQUATION']['PRODUCTS'];
 	if cpdB in products:
@@ -357,6 +365,7 @@ def get_id(database, obj):
 		return( -1 );
 
 def GIBBS(RN,unknownreactions = 0): #Finds the Gibbs free energy for any kegg reaction via the reaction number
+<<<<<<< HEAD
     #try:
     	GFE = 0
     	newstr = http.request('GET', 'http://rest.kegg.jp/get/rn:{0}'.format(RN)).data.decode() 
@@ -376,4 +385,21 @@ def GIBBS(RN,unknownreactions = 0): #Finds the Gibbs free energy for any kegg re
     	return(GFE,unknownreactions)
     #except:
     #	return(float(0),float(1))
+=======
+        GFE = 0
+        newstr = http.request('GET', 'http://rest.kegg.jp/get/rn:{0}'.format(RN)).data.decode() 
+        EClist = newstr.split("ENZYME")[1].split("\n")[0].strip().split()
+        for EC in EClist:
+                bcdat = http.request('GET', 'https://biocyc.org/META/NEW-IMAGE?type=EC-NUMBER&object=EC-{0}'.format(EC)).data.decode("utf-8", "ignore");
+                bclink = bcdat.split("Reaction: \n                              \n <br> <a href=\"")[1].split("\" class=\"REACTION\"")[0].strip();
+                brstr = http.request('GET', 'https://biocyc.org{0}'.format(bclink)).data.decode("utf-8", "ignore")
+                if "Standard Gibbs Free Energy" in brstr:
+                        GFE += float(brstr.split("kcal/mol")[0].split("Standard Gibbs Free Energy")[1].split("\n")[1].strip()) 
+                else: 
+                        unknownreactions += 1;
+	
+        return(GFE,unknownreactions);
+
+
+>>>>>>> b30801169adb968f5d498f5a2877fdb1d4be2cf9
 

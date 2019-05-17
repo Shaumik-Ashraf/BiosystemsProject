@@ -4,6 +4,8 @@
 # current commands are help, exit, list, find, get
 
 import kegg;
+import time;
+#import cmd;
 
 help_text = """
 	This is a command-line interface program for interacting with
@@ -69,6 +71,52 @@ def print_text(t, limit):
 	else:
 		print( t );
 
+def print_dict(d, limit): #limit here is output-line-limit
+	print("{");
+	key_list = list(d.keys());
+	i = 0;
+	while( i < limit and i < len(key_list) ):
+		val = d[key_list[i]]
+		print("\t{0} : {1}".format(key_list[i],val));
+		i += 1;
+	print("}");
+	
+def print_dict_to_csv(d, filename):
+	if filename[-4:] != ".csv":
+		filename += ".csv"
+	file = open(filename, 'w');
+	
+	key_list = list(d.keys());
+	key_list_caps = list(range(len(key_list))); #preallocate array
+	key_ctr = list(range(len(key_list))); #preallocate array
+	d_lens = key_ctr.dup();
+	for i in range(len(key_list)):
+		key_list_caps[i] = key_list[i].capitalize();
+		key_ctr[i] = 0;
+		d_lens[i] = len(d[key_list[i]])
+
+	first_line = ",".join(key_list_caps) + "\n";
+	file.write(first_line);
+		
+	max_j = 0;
+	while( max_j < (max(d_lens)-1) ):
+		for i in range(len(key_list)):
+			j = key_ctr[i];
+			key = key_list[i];
+			line = "";
+			if j > len(d[key]):
+				line += " ,"
+			else:
+				line += (d[key][j] + ",");
+				key_ctr[i] += 1;
+		line[len(line)-1] = "\n"  #replace last char from , to \n
+		file.write(line);
+		max_j = max(key_ctr);
+	
+	file.close();
+	#end while
+#end def
+
 def singularize(s):
 	if s.endswith('s'):
 		return s[:len(s)-1];
@@ -103,45 +151,94 @@ while 1==1:
 	elif command[0] == "list":
 		needs_args(2);
 		if verbose:
-			print( "kegg.list2({0})".format(command[1]) )
+			start = time.time_ns();
+			print( "kegg.list2({0})".format(command[1]) );
 		out = kegg.list2(command[1]);
 		print_list( out, list_limit );
+		if verbose:
+			end = time.time_ns();
+			print("Time: {0} nanoseconds".format(end - start));
 	elif command[0] == "find":
 		needs_args(3);
 		if verbose:
+			start = time.time_ns();
 			print( "kegg.find2({0},{1})".format(command[1],command[2]) )
 		out = kegg.find2( command[1], command[2] );
 		print_list( out, list_limit );
+		if verbose:
+			end = time.time_ns();
+			print("Time: {0} nanoseconds".format(end - start));
 	elif command[0] == "get":
 		needs_args(2);
 		if verbose:
+			start = time.time_ns();
 			print( "kegg.get({0})".format(command[1]) )
 		out = kegg.get(command[1]);
 		print_text( out, output_line_limit );
+		if verbose:
+			end = time.time_ns();
+			print("Time: {0} nanoseconds".format(end - start));
 	elif command[0] == "info":
 		needs_args(2);
 		if verbose:
+			start = time.time_ns()
 			print( "kegg.info({0})".format(command[1]) )
 		out = kegg.info(command[1]);
 		print_text( out, output_line_limit );
+		if verbose:
+			end = time.time_ns();
+			print("Time: {0} nanoseconds".format(end - start));
 	elif command[0] == "link":
 		needs_args(3);
 		if verbose:
+			start = time.time_ns();
 			print( "kegg.link({0},{1})".format(command[1],command[2]) )
 		out = kegg.link(command[1], command[2]);
 		print_list(out, list_limit);
+		if verbose:
+			end = time.time_ns();
+			print("Time: {0} nanoseconds".format(end - start));
 	elif command[0] == "extract":
 		needs_args(2);
 		if verbose:
+			start = time.time_ns();
 			print( "kegg.get_extract({0})".format(command[1]) )
 		dct = kegg.get_extract(command[1]);
-		print( str(dct) );
+		print_dict(dct, output_line_limit);
+		if verbose:
+			end = time.time_ns();
+			print("Time: {0} nanoseconds".format(end - start));
 	elif command[0] == "search-pathway":
 		needs_args(3);
 		if verbose:
+			start = time.time_ns();
 			print("search-pathway...")
 		x = kegg.A2B(command[1], command[2], depth_limit);
-		print(str(x));
+		print_dict(x, output_line_limit);
+		defined['solution'] = x;
+		if verbose:
+			end = time.time_ns();
+			print("Time: {0} nanoseconds".format(end - start));
+	elif command[0] == "search-reaction":
+		needs_args(3);
+		if verbose:
+			start = time.time_ns();
+			print("search-reaction...");
+		x = kegg.A2Br(command[1], command[2], depth_limit);
+		print_dict(x, output_line_limit);
+		defined['solution'] = x;
+		if verbose:
+			end = time.time_ns();
+			print("Time: {0} nanoseconds".format(end - start));
+	elif command[0] == "save-solution":
+		needs_args(2);
+		if verbose:
+			start = time.time_ns();
+			print("saving solution to {0}".format(command[1]));
+		print_dict_to_csv(defined['solution'], command[1]);
+		if verbose:
+			end = time.time_ns();
+			print("Time: {0} nanoseconds".format(end - start));
 	elif command[0] == "define":
 		needs_args(3);
 		kid = kegg.get_id(command[1], command[2]);
