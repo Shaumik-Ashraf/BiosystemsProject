@@ -2,10 +2,14 @@
 # database_access_code.py consolodated into a module
 # requires: urllib3
 
-import urllib3;
-import re;
+import urllib3
+import re
+import threading
+import time
+import requests
 
-http = urllib3.PoolManager();
+requests.packages.urllib3.disable_warnings()
+http = urllib3.PoolManager()
 
 #direct simply joins the array with slashes and sends request to kegg
 def direct(arg_list):
@@ -26,7 +30,7 @@ def list2(database):
 	for i in range( len(newlist) ):
 		retlist[i] = newlist[i].split('\t');
 	return(retlist);   #returns list of lists
-		
+
 def find(datatype):
 	newstr = str(http.request('GET', 'http://rest.kegg.jp/find/{datatype}/'.format(datatype=datatype)).data)
 	newstr = newstr.replace("\\t", "\t");
@@ -59,7 +63,7 @@ def info(database):
 
 #def conv(two_ids)
 #       text = direct(['conv', two_ids[0], two_ids[1]]);
-		
+
 def link(database, query):
 	temptext = direct(['link', database, query])
 	templist = temptext.splitlines();
@@ -75,12 +79,12 @@ def link(database, query):
 #i.e.: get/md:M00377 => { "ENTRY":"M00377" "NAME":"Reductive ... "REACTION":{"rnxxx":[[a,b][c,d]]}}
 def get_extract(query):
 	to_parse = get(query);
-	lines = to_parse.splitlines();  
+	lines = to_parse.splitlines();
 	ret = {};
 
 	while '' in lines:
 		lines.remove('')
-	 
+
 	blocks = [];
 	j = -1;
 	i = 0;
@@ -282,8 +286,9 @@ def A2Br(compoundA, compoundB, depth_limit):
 		
 	return search_reactions(idA, idB, depth_limit );
 
-	
-def search_modules(idA, idB, depth_limit):
+
+def search_modules(idA, idB, depth_limit, fill_solution, do_gibbs = False ):
+
 	solution = {'found':False, 'modules':[], 'reactions':[], 'enzymes':[], 'Gibbs':0};
 	mdlist = link("module", idA);
 	if( mdlist == [] ):
@@ -411,23 +416,26 @@ def get_id(database, obj):
 		return( -1 );
 
 def GIBBS(RN,unknownreactions = 0): #Finds the Gibbs free energy for any kegg reaction via the reaction number
-    #try:
+    try:
     	GFE = 0
-    	newstr = http.request('GET', 'http://rest.kegg.jp/get/rn:{0}'.format(RN)).data.decode() 
+    	newstr = http.request( 'GET', 'http://rest.kegg.jp/get/rn:{0}'.format(RN)).data.decode() 
     	EClist = newstr.split("ENZYME")[1].split("\n")[0].strip().split()
     	for EC in EClist:
-    		if(not re.search("\d[.]\d[.]\d[.]\d", EC)) : 
-    			newEC = re.search("\d[.]\d[.]\d[.]\d", http.request('GET', 'http://rest.kegg.jp/get/rn:{0}'.format(RN)).data.decode()).group()
-    		else:
-    			newEC = EC
-    		bcdat = http.request('GET', 'https://biocyc.org/META/NEW-IMAGE?type=EC-NUMBER&object=EC-{0}'.format(newEC)).data.decode("utf-8", "ignore");
+    		if(not re.search("\d[.]\d[.]\d[.]\d", EC) and EC) : 
+    			EC = re.search("\d[.]\d[.]\d[.]\d", http.request('GET', 'http://rest.kegg.jp/get/rn:{0}'.format(RN)).data.decode()).group()
+    		elif (not re.search("\d[.]\d[.]\d[.]\d", EC) and not (EC)):
+    			print('No Gibbs can be found')
+    			GFE = 0
+    			unknownreactions += 1
+    			continue
+    		bcdat = http.request( 'GET', 'https://biocyc.org/META/NEW-IMAGE?type=EC-NUMBER&object=EC-{0}'.format(EC)).data.decode("utf-8", "ignore");
     		bclink = bcdat.split("Reaction:")[1].split("\n <br> <a href=\"")[1].split("\" class=\"REACTION\"")[0].strip();
-    		brstr = http.request('GET', 'https://biocyc.org{0}'.format(bclink)).data.decode("utf-8", "ignore")
+    		brstr = http.request( 'GET', 'https://biocyc.org{0}'.format(bclink)).data.decode("utf-8", "ignore")
     		if "Standard Gibbs Free Energy" in brstr:
     			GFE += float(brstr.split("kcal/mol")[0].split("Standard Gibbs Free Energy")[1].split("\n")[1].strip()) 
     		else: 
     			unknownreactions += 1
     	return(GFE,unknownreactions)
-    #except:
-    #	return(float(0),float(1))
-
+    except:
+    	unknownreactions += 1
+    	return(GFE,unknownreactions)
