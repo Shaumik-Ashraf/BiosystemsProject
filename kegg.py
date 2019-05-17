@@ -354,6 +354,7 @@ def search_reactions(cpdA_idlist, cpdB_id, depth_limit):
 	return(solution);
 		
 def module_helper(cpdB, module, past_modules, depth, limit):
+	print(depth)
 	if depth > limit:
 		return [False]
 	elif module in past_modules:
@@ -373,7 +374,7 @@ def module_helper(cpdB, module, past_modules, depth, limit):
 		for r in rxns:
 			next_md_list = link('module', r);
 			for next_module in next_md_list:
-				x = [module] + module_helper(cpdB, next_module, past_modules + [module], depth+1, limit); #recurse
+				x = [module] + module_helper(cpdB, next_module, past_modules + [module], (depth+1), limit); #recurse
 				if x[ len(x)-1 ]: #if last element is not False
 					#found!
 					return x; #returns array of modules
@@ -398,7 +399,7 @@ def reaction_helper(cpdB, reaction, past_reactions, depth, limit):
 		for p in products:
 			next_rxn_list = link('reaction', p);
 			for next_reaction in next_rxn_list:
-				x = [reaction] + reaction_helper(cpdB, next_reaction, past_reactions + [reaction], depth+1 , limit);
+				x = [reaction] + reaction_helper(cpdB, next_reaction, past_reactions + [reaction], (depth+1) , limit);
 				if x[ len(x)-1 ]: #if last element not False
 					return x;
 					
