@@ -136,7 +136,7 @@ def print_full_to_txt(d, filename):
 			for each in value:
 				file.write( kegg.get( each ) + "\n" );
 	
-	file.close();		
+	file.close();           
 
 
 # ========command-line loop============================
@@ -149,7 +149,9 @@ while 1==1:
 	sys.stdout.flush(); #clear output buffer (does NOT clear screen)
 	sys.stdin.flush();  #clear input buffer
 	sys.stdin.flush();  #do it again
+
 	print("kegg-cli>>", end="");
+	
 	command = input().strip().split(" ");
 	
 	for i in range(len(command)):
@@ -233,6 +235,7 @@ while 1==1:
 		if verbose:
 			end = time.time_ns();
 			print("Time: {0} nanoseconds".format(end - start));
+
 	elif singularize(command[0]) == "search-pathway":
 		needs_args(3);
 		if verbose:
@@ -247,6 +250,7 @@ while 1==1:
 		if verbose:
 			end = time.time_ns();
 			print("Time: {0} nanoseconds".format(end - start));
+
 	elif singularize(command[0]) == "search-reaction":
 		needs_args(3);
 		if verbose:
@@ -261,15 +265,27 @@ while 1==1:
 		if verbose:
 			end = time.time_ns();
 			print("Time: {0} nanoseconds".format(end - start));
-	elif command[0] == "save-solution": #WORK ON THIS
+
+	elif command[0] == "save-solution":
 		needs_args(2);
 		if verbose:
 			start = time.time_ns();
 			print("saving solution to {0}".format(command[1]));
-		print_dict_to_csv(defined['solution'], command[1]);
+		print_dict_to_txt(defined['solution'], command[1]);
 		if verbose:
 			end = time.time_ns();
 			print("Time: {0} nanoseconds".format(end - start));
+
+	elif command[0] == "save-full-solution":
+		needs_args(2)
+		if verbose:
+			start = time.time_ns();
+			print("saving solution to {0}".format(command[1]));
+		print_full_to_txt(defined['solution'], command[1]);
+		if verbose:
+			end = time.time_ns();
+			print("Time: {0} nanoseconds".format(end - start));
+			
 	elif command[0].capitalize() == "Gibbs":
 		needs_args(2);
 		x, y = GIBBS(command[1])
@@ -307,5 +323,8 @@ while 1==1:
 		print("Settings: " + str({'list-limit':list_limit, 'output-line-limit':output_line_limit, 'verbose':verbose, 'depth-limit':depth_limit}));
 	else:
 		print("Command unrecognized");
+
+	if False:
+		print('A glitch in the Matrix');
 
 print( "End" )

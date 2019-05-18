@@ -405,10 +405,10 @@ def reaction_helper(cpdB,
 
         if ( rdepth > limit):
                 if verbose:
-					if( random.random() < 0.01 ): #easter egg
-                        print('\tToo phat');
-					else:
-						print('\tReject, depth limit reached');
+                        if( random.random() < 0.01 ): #easter egg
+                                print('\tToo phat');
+                        else:
+                                print('\tReject, depth limit reached');
                 return [False];
 
         if reaction in past_reactions:
