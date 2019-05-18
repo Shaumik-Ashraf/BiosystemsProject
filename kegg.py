@@ -11,6 +11,7 @@ import requests
 requests.packages.urllib3.disable_warnings()
 http = urllib3.PoolManager()
 all_past_intermediates = [];
+all_intermediate_depths = [];
 
 #direct simply joins the array with slashes and sends request to kegg
 def direct(arg_list):
@@ -336,7 +337,10 @@ def search_modules(idAlist, idB, depth_limit, fill_solution = True, do_gibbs = F
 	return solution;  #I do not believe this ever gets called
 
 def search_reactions(cpdA_idlist, cpdB_id, depth_limit, fill_solution = True, do_gibbs = False, verbose = True):
+	if (depth_limit < 0):
+		depth_limit = 9999;
 	all_past_intermediates.clear();
+	all_intermediate_depths.clear();
 	for cpdA_id in cpdA_idlist:
 		solution = {"found":False, "reactions":[], "enzymes":[], "Gibbs":0}
 		#past_reactions = []
@@ -388,48 +392,76 @@ blacklisted_compounds = ['C00001', 'C00007'] #water and Oxygen because they are 
 def reaction_helper(cpdB, 
 					reaction,  
 					past_reactions,
-					intermediate,  
+					intermediate, 
 					rdepth, 
 					limit,
-					verbose):
-	#uses global called all_past_intermediates (list)
+					verbose = True):
+	#uses global called all_past_intermediates and all_intermediate_depths (list)
+
 	if verbose:
 		print( "D{0} | Trying ".format(rdepth) + str(past_reactions + [reaction]) );
-	#print(len(past_reactions))
-	#print(rdepth, limit)
-	if ( rdepth > limit) :
-		#print('Too phat')
-		return [False];
-	if ( intermediate in all_past_intermediates ):
-		return [False]; 
-	else:
-		rxn_data = get_extract(reaction);
-		if (cpdB in rxn_data['EQUATION']['REACTANTS']) and (intermediate in rxn_data['EQUATION']['REACTANTS']):
-			#print('ET phone home')
-			return [False];
-		elif (cpdB in rxn_data['EQUATION']['PRODUCTS']) and (intermediate in rxn_data['EQUATION']['PRODUCTS']):
-			#print('ET phone home')
-			return [False];
-		elif (cpdB in rxn_data['EQUATION']['PRODUCTS']) and (intermediate in rxn_data['EQUATION']['REACTANTS']):
-			return [reaction];
-		elif (cpdB in rxn_data['EQUATION']['REACTANTS']) and (intermediate in rxn_data['EQUATION']['PRODUCTS']):
-			return [reaction];
-		#else:
-		if( intermediate in rxn_data['EQUATION']['PRODUCTS'] ):
-			otherside = rxn_data['EQUATION']['REACTANTS'];
-		else:
-			otherside = rxn_data['EQUATION']['PRODUCTS'];
 
+	if ( rdepth > limit) :
+		if verbose:
+			print('Too phat')
+		return [False];
+
+	if reaction in past_reactions:
+		return [False];
+
+	if ( intermediate in all_past_intermediates ):
+		if rdepth < all_intermediate_depths[ all_past_intermediates.index(intermediate) ]:
+			all_intermediate_depths[ all_past_intermediates.index(intermediate) ] = rdepth;
+			if verbose:
+				print("Refound intermediate in possible pathway");
+		else:
+			return [False];
+	
+	rxn_data = get_extract(reaction);
+	if (cpdB in rxn_data['EQUATION']['REACTANTS']) and (intermediate in rxn_data['EQUATION']['REACTANTS']):
+		if verbose:
+			print('\tBoth in reactants')
+		return [False];
+	elif (cpdB in rxn_data['EQUATION']['PRODUCTS']) and (intermediate in rxn_data['EQUATION']['PRODUCTS']):
+		if verbose:
+			print('\tBoth in products')
+		return [False];
+	elif (cpdB in rxn_data['EQUATION']['PRODUCTS']) and (intermediate in rxn_data['EQUATION']['REACTANTS']):
+		if verbose:
+			print("\tFound!")
+		return [reaction];
+	elif (cpdB in rxn_data['EQUATION']['REACTANTS']) and (intermediate in rxn_data['EQUATION']['PRODUCTS']):
+		if verbose:
+			print("\tFound! (in a reverse reaction)")
+		return [reaction];
+	
+	if( intermediate in rxn_data['EQUATION']['PRODUCTS'] ):
+		otherside = rxn_data['EQUATION']['REACTANTS'];
+	else:
+		otherside = rxn_data['EQUATION']['PRODUCTS'];
+		if cpdB in otherside:
+			if verbose:
+				print("\tFound 2, electric boogaloo!")
+			return [reaction];
+	
+	if intermediate not in blacklisted_compounds:
 		all_past_intermediates.append( intermediate );
-		for p in otherside:
-			#p is next_intermediate
-			if p not in blacklisted_compounds:
-				next_rxn_list = link('reaction', p);
-				for next_reaction in next_rxn_list:
-					#print( "Trying 2" + str(past_reactions + [reaction]) )
-					x = [reaction] + reaction_helper(cpdB, next_reaction, past_reactions + [reaction], p, (rdepth+1), limit, verbose);
-					if x[ len(x)-1 ]: #if last element not False
-						return x;
+		all_intermediate_depths.append( rdepth );
+
+	for p in otherside:
+		#p is next_intermediate
+		if p in blacklisted_compounds:
+			continue;
+		if p in all_past_intermediates: 
+			if rdepth >= all_intermediate_depths[ all_past_intermediates.index(p) ]:
+				continue; #start next loop/iteration
+		next_rxn_list = link('reaction', p);
+		for next_reaction in next_rxn_list:
+			#print("\trecurse")
+			x = [reaction] + reaction_helper(cpdB, next_reaction, past_reactions + [reaction], p, (rdepth+1), limit, verbose);
+			if x[ len(x)-1 ]: #if last element not False
+				return x;
+
 	return [False];
 
 def remove_id_prefix(s):
