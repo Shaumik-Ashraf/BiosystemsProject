@@ -297,7 +297,7 @@ while 1==1:
 			
 	elif command[0].capitalize() == "Gibbs":
 		needs_args(2);
-		x, y = GIBBS(command[1])
+		x, y = kegg.GIBBS(command[1])
 		print( x );
 	elif command[0] == "define":
 		needs_args(3);

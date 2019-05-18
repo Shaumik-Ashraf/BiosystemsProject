@@ -491,9 +491,9 @@ def GIBBS(RN,unknownreactions = 0): #Finds the Gibbs free energy for any kegg re
 		newstr = http.request( 'GET', 'http://rest.kegg.jp/get/rn:{0}'.format(RN)).data.decode() 
 		EClist = newstr.split("ENZYME")[1].split("\n")[0].strip().split()
 		for EC in EClist:
-			if(not re.search("\d[.]\d[.]\d[.]\d", EC) and EC) : 
-				EC = re.search("\d[.]\d[.]\d[.]\d", http.request('GET', 'http://rest.kegg.jp/get/rn:{0}'.format(RN)).data.decode()).group()
-			elif (not re.search("\d[.]\d[.]\d[.]\d", EC) and not (EC)):
+			if(not re.search("[0-9]+[.][0-9]+[.][0-9]+[.][0-9]+", EC) and EC) : 
+				EC = re.search("[0-9]+[.][0-9]+[.][0-9]+[.][0-9]+", http.request('GET', 'http://rest.kegg.jp/get/rn:{0}'.format(RN)).data.decode()).group()
+			elif (not re.search("[0-9]+[.][0-9]+[.][0-9]+[.][0-9]+", EC) and not (EC)):
 				print('No Gibbs can be found')
 				GFE = 0
 				unknownreactions += 1
