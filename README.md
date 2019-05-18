@@ -11,7 +11,7 @@
  
  See [KEGG here](https://kegg.jp) (Kyoto Encyclopedia of Genes and Genomes)
  
- This project was in partial completement of BEE3600 - Biological and Cellular Enginerring,
+ This project was in partial completement of BEE3600 - Molecular and Cellular Bioenginerring,
  Cornell University
  
 ## Dependencies
