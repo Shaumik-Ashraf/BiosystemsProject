@@ -4,7 +4,7 @@
 
 import urllib3
 import re
-import threading
+#import threading
 import time
 import requests
 
