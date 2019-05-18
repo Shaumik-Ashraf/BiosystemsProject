@@ -38,7 +38,8 @@
 		find <database> <term to search> - returns all entries in database with term specified
 		get <kegg id> - returns information about object with specified kegg id
 		info <database> - returns information about the database
-		set <setting> <value> - change settings
+		gibbs <reaction id> - returns Gibbs Free Energy of reaction using alternative databases or 0 on failure
+		set <setting> <value> - change settings, see below
 		define <database> <name> - will make <name> interchangeable with its kegg id in the cli
 		see-defined (no arguements) - see a list of all defined names/kegg ids
 		see-settings (no arguements) - print settings
