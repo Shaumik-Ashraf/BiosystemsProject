@@ -60,8 +60,11 @@
 			in the search-* commands overrides this setting for that run (only).
 		verbose -> prints detailed output on what the program is doing, either True/False
 		solve-gibbs -> if true will solve attempt to find Gibbs Free Energy
-		
+	
+	set <setting> <value> command changes the setting, verbose and solve-gibbs can only be true or false.
+	
 	See https://kegg.jp for more information on KEGG.
+	
 ```
 
 ## License
