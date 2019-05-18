@@ -17,7 +17,7 @@ help_text = """
 		<command> <arguement 1> <arguement 2> ... <arguement n> <ENTER>
 
 	where < > is replaced by what the word within the brackets represent
-	(WITHOUT the brackets themselves) and [ ] is optional text. The number of arguements required
+	(WITHOUT the brackets themselves) and [ ] contains optional text. The number of arguements required
 	for each command various. Here is a list of all commands, the arguements
 	required (if any), and what they do:
 

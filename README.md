@@ -28,7 +28,7 @@
 		<command> <arguement 1> <arguement 2> ... <arguement n> <ENTER>
 
 	where < > is replaced by what the word within the brackets represent
-	(WITHOUT the brackets themselves.) The number of arguements required
+	(WITHOUT the brackets themselves) and [ ] contains optional text. The number of arguements required
 	for each command various. Here is a list of all commands, the arguements
 	required (if any), and what they do:
 
@@ -42,8 +42,8 @@
 		define <database> <name> - will make <name> interchangeable with its kegg id in the cli
 		see-defined (no arguements) - see a list of all defined names/kegg ids
 		see-settings (no arguements) - print settings
-		search-pathway <compound A> <compound B> - depth-first search of biological pathway from A to B
-		search-reaction <compound A> <compound B> - depth-first search of reaction series from A to B
+		search-pathway[s] <compound A> <compound B> - depth-first search of biological pathway from A to B
+		search-reaction[s] <compound A> <compound B> - depth-first search of reaction series from A to B
 		
 	The databases in KEGG include but are not limited to:
 		reaction
@@ -58,12 +58,13 @@
 			bigger this number is, the exponentially larger the loading time. Too high of a number may 
 			improve search results but will exponentially increase search time.
 		verbose -> prints detailed output on what the program is doing, either True/False
-				
+		solve-gibbs -> if true will solve attempt to find Gibbs Free Energy
+		
 	See https://kegg.jp for more information on KEGG.
 ```
 
 ## License
- This project is under the MIT License. See LICENSE.txt for more details.
+ This project is under the MIT License. See [LICENSE.txt](https://github.com/Shaumik-Ashraf/BiosystemsProject/blob/master/LICENSE.txt) for more details.
 
 ## Possible Future Improvements
  It is unknown if this project will remain under active developement/support in the future, but 
