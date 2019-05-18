@@ -63,6 +63,7 @@
 ```
 
 ## License
+ This project is under the MIT License. See LICENSE.txt for more details.
 
 ## Possible Future Improvements
  It is unknown if this project will remain under active developement/support in the future, but 
