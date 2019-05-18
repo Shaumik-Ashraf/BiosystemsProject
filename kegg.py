@@ -339,8 +339,7 @@ def search_modules(idAlist, idB, depth_limit, fill_solution = True, do_gibbs = F
 def search_reactions(cpdA_idlist, cpdB_id, depth_limit, fill_solution = True, do_gibbs = False, verbose = True):
 	if (depth_limit < 0):
 		depth_limit = 9999;
-	all_past_intermediates.clear();
-	all_intermediate_depths.clear();
+	
 	for cpdA_id in cpdA_idlist:
 		solution = {"found":False, "reactions":[], "enzymes":[], "Gibbs":0}
 		#past_reactions = []
@@ -348,6 +347,8 @@ def search_reactions(cpdA_idlist, cpdB_id, depth_limit, fill_solution = True, do
 		if len(reactions)==0:
 			continue; #no solutions	
 		for rn in reactions:
+			all_past_intermediates.clear();
+			all_intermediate_depths.clear();
 			solution["reactions"] = reaction_helper(cpdB_id, rn, [], cpdA_id, 0, depth_limit, verbose)
 			if solution["reactions"][ len(solution["reactions"])-1 ]: #if last reaction is not false:
 				solution['found'] = True;
@@ -403,10 +404,12 @@ def reaction_helper(cpdB,
 
 	if ( rdepth > limit) :
 		if verbose:
-			print('Too phat')
+			print('Too phat');
 		return [False];
 
 	if reaction in past_reactions:
+		if verbose:
+			print('Reject; upbranch');
 		return [False];
 
 	if ( intermediate in all_past_intermediates ):
@@ -444,7 +447,7 @@ def reaction_helper(cpdB,
 				print("\tFound 2, electric boogaloo!")
 			return [reaction];
 	
-	if intermediate not in blacklisted_compounds:
+	if (intermediate not in blacklisted_compounds) and (intermediate not in all_past_intermediates):
 		all_past_intermediates.append( intermediate );
 		all_intermediate_depths.append( rdepth );
 
@@ -457,7 +460,7 @@ def reaction_helper(cpdB,
 				continue; #start next loop/iteration
 		next_rxn_list = link('reaction', p);
 		for next_reaction in next_rxn_list:
-			#print("\trecurse")
+			print("\trecurse at P:{0} | Next:{1} | D:{2}".format(p, next_reaction, rdepth))
 			x = [reaction] + reaction_helper(cpdB, next_reaction, past_reactions + [reaction], p, (rdepth+1), limit, verbose);
 			if x[ len(x)-1 ]: #if last element not False
 				return x;

@@ -150,6 +150,7 @@ print("Enter 'help' for help. Note that verbose is on by default to flex.\n");
 while 1==1:
 	sys.stdout.flush(); #clear output buffer (does NOT clear screen)
 	sys.stdin.flush();  #clear input buffer
+	sys.stdin.flush();  #do it again
 	print("kegg-cli>>", end="");
 	command = input().strip().split(" ");
 	
