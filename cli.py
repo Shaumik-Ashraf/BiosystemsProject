@@ -17,9 +17,9 @@ help_text = """
 		<command> <arguement 1> <arguement 2> ... <arguement n> <ENTER>
 
 	where < > is replaced by what the word within the brackets represent
-	(WITHOUT the brackets themselves) and [ ] contains optional text. The number of arguements required
-	for each command various. Here is a list of all commands, the arguements
-	required (if any), and what they do:
+	(WITHOUT the brackets themselves) and [ ] contains optional values. The number of 
+	arguements required for each command various. Here is a list of all commands, the 
+	arguements required (if any), and what they do:
 
 		help (no arguements) - print this message
 		exit (no arguements) - end program
@@ -31,8 +31,8 @@ help_text = """
 		define <database> <name> - will make <name> interchangeable with its kegg id in the cli
 		see-defined (no arguements) - see a list of all defined names/kegg ids
 		see-settings (no arguements) - print settings
-		search-pathway[s] <compound A> <compound B> - depth-first search of biological pathway from A to B
-		search-reaction[s] <compound A> <compound B> - depth-first search of reaction series from A to B
+		search-pathway[s] <compound A> <compound B> [depth-limit] - depth-first search of biological pathway from A to B
+		search-reaction[s] <compound A> <compound B> [depth-limit] - depth-first search of reaction series from A to B
 		
 	The databases in KEGG include but are not limited to:
 		reaction
@@ -145,6 +145,7 @@ def get_settings_as_dict():
 print( "Start KEGG Command-Line Interface" );
 print("Settings = ", end = "");
 print_dict( get_settings_as_dict(), -1 );
+print("Enter 'help' for help. Note that verbose is on by default to flex.\n");
 
 while 1==1:
 	sys.stdout.flush(); #clear output buffer (does NOT clear screen)
@@ -160,11 +161,14 @@ while 1==1:
 
 	if verbose:
 		print( str(command) )
-		
+	
+	#start command if-else ladder:
 	if command[0] == "help":
 		print(help_text);
+		
 	elif command[0] == "exit":
 		break;
+		
 	elif command[0] == "list":
 		needs_args(2);
 		if verbose:
@@ -175,6 +179,7 @@ while 1==1:
 		if verbose:
 			end = time.time_ns();
 			print("Time: {0} nanoseconds".format(end - start));
+
 	elif command[0] == "find":
 		needs_args(3);
 		if verbose:
@@ -185,6 +190,7 @@ while 1==1:
 		if verbose:
 			end = time.time_ns();
 			print("Time: {0} nanoseconds".format(end - start));
+
 	elif command[0] == "get":
 		needs_args(2);
 		if verbose:
@@ -195,6 +201,7 @@ while 1==1:
 		if verbose:
 			end = time.time_ns();
 			print("Time: {0} nanoseconds".format(end - start));
+
 	elif command[0] == "info":
 		needs_args(2);
 		if verbose:
@@ -205,6 +212,7 @@ while 1==1:
 		if verbose:
 			end = time.time_ns();
 			print("Time: {0} nanoseconds".format(end - start));
+
 	elif command[0] == "link":
 		needs_args(3);
 		if verbose:
@@ -215,6 +223,7 @@ while 1==1:
 		if verbose:
 			end = time.time_ns();
 			print("Time: {0} nanoseconds".format(end - start));
+
 	elif command[0] == "extract":
 		needs_args(2);
 		if verbose:
@@ -230,7 +239,10 @@ while 1==1:
 		if verbose:
 			start = time.time_ns();
 			print("search-pathway...")
-		x = kegg.A2B(command[1], command[2], depth_limit);
+		if len(command) == 4:
+			x = kegg.A2B(command[1], command[2], command[3]);
+		else:
+			x = kegg.A2B(command[1], command[2], depth_limit);
 		print_dict(x, output_line_limit);
 		defined['solution'] = x;
 		if verbose:
@@ -241,7 +253,10 @@ while 1==1:
 		if verbose:
 			start = time.time_ns();
 			print("search-reaction...");
-		x = kegg.A2Br(command[1], command[2], depth_limit);
+		if len(command) == 4:
+			x = kegg.A2Br(command[1], command[2], command[3]);
+		else:
+			x = kegg.A2Br(command[1], command[2], depth_limit);
 		print_dict(x, output_line_limit);
 		defined['solution'] = x;
 		if verbose:

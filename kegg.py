@@ -200,7 +200,7 @@ def get_extract(query):
 
 	return ret;
 
-def A2B(compoundA, compoundB, depth_limit):
+def A2B(compoundA, compoundB, depth_limit=10, verbose=True):
 	#set variable idA, ask if compoundA is correctly found
 	idAlist = []
 	if re.compile('C\d{5,}').match(compoundA):  #cpd id was provided
@@ -248,7 +248,7 @@ def A2B(compoundA, compoundB, depth_limit):
 		
 	return search_modules(idAlist, idB, depth_limit, True, False);
 
-def A2Br(compoundA, compoundB, depth_limit):
+def A2Br(compoundA, compoundB, depth_limit=20, verbose=True):
 	#set variable idA, ask if compoundA is correctly found
 	idAlist = []
 	if re.compile('C\d{5,}').match(compoundA):  #cpd id was provided
