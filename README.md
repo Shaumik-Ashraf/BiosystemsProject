@@ -27,10 +27,10 @@
 	format:
 		<command> <arguement 1> <arguement 2> ... <arguement n> <ENTER>
 
-	where < > is replaced by what the word within the brackets represent
-	(WITHOUT the brackets themselves) and [ ] contains optional values. The number of 
-	arguements required for each command various. Here is a list of all commands, the 
-	arguements required (if any), and what they do:
+	where < > is replaced by the meaning of the text within (WITHOUT the brackets
+	themselves), [ ] contains optional values, and * is any possible existing term. 
+	The number of arguements required for each command various. Here is a list of 
+	all commands, the arguements required (if any), and what they do:
 
 		help (no arguements) - print this message
 		exit (no arguements) - end program
@@ -44,7 +44,12 @@
 		see-settings (no arguements) - print settings
 		search-pathway[s] <compound A> <compound B> [depth-limit] - depth-first search of biological pathway from A to B
 		search-reaction[s] <compound A> <compound B> [depth-limit] - depth-first search of reaction series from A to B
-		
+		save-solution <filename> - after either search-* command, will save the solution in a txt file
+		save-full-solution <filename> - like save-solution, but saves ALL KEGG data of the solution
+	
+	save-* commands do not need to be called immediately after search-* commands, but will always refer to the latest
+	search-* command results. 
+	
 	The databases in KEGG include but are not limited to:
 		reaction[s]
 		enzyme[s]
@@ -60,8 +65,11 @@
 			in the search-* commands overrides this setting for that run (only).
 		verbose -> prints detailed output on what the program is doing, either True/False
 		solve-gibbs -> if true will solve attempt to find Gibbs Free Energy
-		
+	
+	set <setting> <value> command changes the setting, verbose and solve-gibbs can only be true or false.
+	
 	See https://kegg.jp for more information on KEGG.
+	
 ```
 
 ## License
