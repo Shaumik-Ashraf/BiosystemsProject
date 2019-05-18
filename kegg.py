@@ -7,6 +7,7 @@ import re
 #import threading
 import time
 import requests
+import random
 
 requests.packages.urllib3.disable_warnings()
 http = urllib3.PoolManager()
@@ -114,10 +115,13 @@ def get_extract(query):
                                 ret[key] = tokens[0];
                                 ret["TYPE"] = tokens[1:];
                 i += 1;
-        keys2 = list(ret.keys());
-        keys2.remove('ENTRY');
-        keys2.remove('TYPE');
-        
+				#end while loop
+		keys2 = list(ret.keys());
+		if 'ENTRY' in keys2:
+				keys2.remove('ENTRY');
+		if 'TYPE' in keys2:
+        		keys2.remove('TYPE');
+		
         for key in keys2: #parse blocks into structured dicts
                 #print("DEBUG: " + key )
                 #print("DEBUG: " + str(ret[key]))

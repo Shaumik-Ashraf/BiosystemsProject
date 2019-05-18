@@ -242,7 +242,7 @@ while 1==1:
 			start = time.time_ns();
 			print("search-pathway...")
 		if len(command) == 4:
-			x = kegg.A2B(command[1], command[2], command[3], solve_gibbs, verbose);
+			x = kegg.A2B(command[1], command[2], int(command[3]), solve_gibbs, verbose);
 		else:
 			x = kegg.A2B(command[1], command[2], depth_limit, solve_gibbs, verbose);
 		print_dict(x, output_line_limit);
@@ -257,7 +257,7 @@ while 1==1:
 			start = time.time_ns();
 			print("search-reaction...");
 		if len(command) == 4:
-			x = kegg.A2Br(command[1], command[2], command[3], solve_gibbs, verbose);
+			x = kegg.A2Br(command[1], command[2], int(command[3]), solve_gibbs, verbose);
 		else:
 			x = kegg.A2Br(command[1], command[2], depth_limit, solve_gibbs, verbose);
 		print_dict(x, output_line_limit);
