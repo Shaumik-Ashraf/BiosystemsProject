@@ -278,6 +278,11 @@ while 1==1:
 				verbose = True;
 			else:
 				verbose = False;
+		elif command[1]=="solve-gibbs":
+			if ('t' in command[2]) or ('T' in command[2]):
+				verbose = True;
+			else:
+				verbose = False;
 		else:
 			print( command[1] + " unrecognized" );
 	elif command[0] == "see-settings":
