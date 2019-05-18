@@ -6,7 +6,10 @@
 import kegg;
 import time;
 #import cmd;
+import sys;
 
+
+#==============help text=============================
 help_text = """
 	This is a command-line interface program for interacting with
 	the KEGG database. It operates by entering lines in the following
@@ -14,7 +17,7 @@ help_text = """
 		<command> <arguement 1> <arguement 2> ... <arguement n> <ENTER>
 
 	where < > is replaced by what the word within the brackets represent
-	(WITHOUT the brackets themselves.) The number of arguements required
+	(WITHOUT the brackets themselves) and [ ] is optional text. The number of arguements required
 	for each command various. Here is a list of all commands, the arguements
 	required (if any), and what they do:
 
@@ -28,8 +31,8 @@ help_text = """
 		define <database> <name> - will make <name> interchangeable with its kegg id in the cli
 		see-defined (no arguements) - see a list of all defined names/kegg ids
 		see-settings (no arguements) - print settings
-		search-pathway <compound A> <compound B> - depth-first search of biological pathway from A to B
-		search-reaction <compound A> <compound B> - depth-first search of reaction series from A to B
+		search-pathway[s] <compound A> <compound B> - depth-first search of biological pathway from A to B
+		search-reaction[s] <compound A> <compound B> - depth-first search of reaction series from A to B
 		
 	The databases in KEGG include but are not limited to:
 		reaction
@@ -48,6 +51,15 @@ help_text = """
 	See https://kegg.jp for more information on KEGG.
 """
 
+#===========Preset Settings==========================
+list_limit = 20;
+output_line_limit = 20;
+depth_limit = 10;
+verbose = False;
+solve_gibbs = False;
+defined = {'water':'C00001', 'H20':'C00001'};
+
+#==============helper functions======================
 def needs_args(n):
 	if len(command) < n:
 		print("Warning, at least " + str(n-1) + " command arguement(s) required.");
@@ -72,6 +84,9 @@ def print_text(t, limit):
 		print( t );
 
 def print_dict(d, limit): #limit here is output-line-limit
+	if limit < 0:
+		limit = 9999;
+		
 	print("{");
 	key_list = list(d.keys());
 	i = 0;
@@ -80,7 +95,7 @@ def print_dict(d, limit): #limit here is output-line-limit
 		print("\t{0} : {1}".format(key_list[i],val));
 		i += 1;
 	print("}");
-	
+
 def print_dict_to_csv(d, filename):
 	if filename[-4:] != ".csv":
 		filename += ".csv"
@@ -123,15 +138,17 @@ def singularize(s):
 	else:
 		return s;
 
-# ========command-line loop================================
+def get_settings_as_dict():
+	return {'list-limit':list_limit, 'output-line-limit':output_line_limit, 'verbose':verbose, 'depth-limit':depth_limit, 'solve-gibbs':solve_gibbs}
+
+# ========command-line loop============================
 print( "Start KEGG Command-Line Interface" );
-list_limit = 20;
-output_line_limit = 20;
-depth_limit = 10;
-verbose = False;
-defined = {'water':'C00001', 'H20':'C00001'};
-print("Settings: " + str( {'list-limit':list_limit, 'output-line-limit':output_line_limit, 'verbose':verbose, 'depth-limit':depth_limit} ) + "\n");
+print("Settings = ", end = "");
+print_dict( get_settings_as_dict(), -1 );
+
 while 1==1:
+	sys.stdout.flush(); #clear output buffer (does NOT clear screen)
+	sys.stdin.flush();  #clear input buffer
 	print("kegg-cli>>", end="");
 	command = input().strip().split(" ");
 	
@@ -142,7 +159,7 @@ while 1==1:
 			command[i] = singularize(command[i])
 
 	if verbose:
-		print( str(command) ) #for debugging
+		print( str(command) )
 		
 	if command[0] == "help":
 		print(help_text);
@@ -208,7 +225,7 @@ while 1==1:
 		if verbose:
 			end = time.time_ns();
 			print("Time: {0} nanoseconds".format(end - start));
-	elif command[0] == "search-pathway":
+	elif singularize(command[0]) == "search-pathway":
 		needs_args(3);
 		if verbose:
 			start = time.time_ns();
@@ -219,7 +236,7 @@ while 1==1:
 		if verbose:
 			end = time.time_ns();
 			print("Time: {0} nanoseconds".format(end - start));
-	elif command[0] == "search-reaction":
+	elif singularize(command[0]) == "search-reaction":
 		needs_args(3);
 		if verbose:
 			start = time.time_ns();
@@ -230,7 +247,7 @@ while 1==1:
 		if verbose:
 			end = time.time_ns();
 			print("Time: {0} nanoseconds".format(end - start));
-	elif command[0] == "save-solution":
+	elif command[0] == "save-solution": #WORK ON THIS
 		needs_args(2);
 		if verbose:
 			start = time.time_ns();
