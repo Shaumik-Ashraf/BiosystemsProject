@@ -337,27 +337,33 @@ def search_modules(idAlist, idB, depth_limit, fill_solution = True, do_gibbs = F
         return solution;  #I do not believe this ever gets called
 
 def search_reactions(cpdA_idlist, cpdB_id, depth_limit, fill_solution = True, do_gibbs = False, verbose = True):
-        if (depth_limit < 0):
-                depth_limit = 9999;
-        
-        for cpdA_id in cpdA_idlist:
-                solution = {"found":False, "reactions":[], "enzymes":[], "Gibbs":0}
-                #past_reactions = []
-                reactions = link("reaction", cpdA_id);
-                if len(reactions)==0:
-                        continue; #no solutions 
-                for rn in reactions:
-                        all_past_intermediates.clear();
-                        all_intermediate_depths.clear();
-                        solution["reactions"] = reaction_helper(cpdB_id, rn, [], cpdA_id, 0, depth_limit, verbose)
-                        if solution["reactions"][ len(solution["reactions"])-1 ]: #if last reaction is not false:
-                                solution['found'] = True;
-                                #fill out solution here!!!!
-                                return solution;        
-        if fill_solution:
-                solution['reactions'] = [];
-                solution['enzymes'] = [];
-        return(solution);
+	if (depth_limit < 0):
+		depth_limit = 9999;
+	
+	for cpdA_id in cpdA_idlist:
+		solution = {"found":False, "reactions":[], "enzymes":[], "Gibbs":0}
+		#past_reactions = []
+		reactions = link("reaction", cpdA_id);
+		if len(reactions)==0:
+			continue #no solutions 
+		for rn in reactions:
+			all_past_intermediates.clear();
+			all_intermediate_depths.clear();
+			solution["reactions"] = reaction_helper(cpdB_id, rn, [], cpdA_id, 0, depth_limit, verbose)
+			if solution["reactions"][ len(solution["reactions"])-1 ]: #if last reaction is not false:
+				solution['found'] = True;
+				if fill_solution:
+					solution['enzymes'] = []
+					n = 0;
+					for r in solution:
+						r_data = get_extract(r);
+						solution['enzymes'].append( r_data['ENZYME'] );
+						if do_gibbs:
+							print("Hacking several other databases for Gibbs Free Energy ({0})".format(i));
+							solution['Gibbs'], n = GIBBS(r,n)
+				return solution;        
+	
+	return(solution);
                 
 def module_helper(cpdB, module, past_modules, depth, limit):
         print(depth)
