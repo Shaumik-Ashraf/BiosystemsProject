@@ -1,16 +1,18 @@
 # Biosystems project
 
-## Goal
- Design a program which extracts biochemical networks from kegg database
- and find an optimal path from molecule A to molecule B 
+## What This Is
+ This program is a cross-platform command-line interface for interacting with the Kyoto 
+ Encyclopedia of Genes and Genomes (KEGG). It provides easy commands to find, list, and
+ get information on any compound, enzyme, or reaction in the KEGG database. It also provides
+ a depth-first search algorithm for finding a series biological pathways that convert a given
+ starting compound to a desired end compound. This can be done either through a pathway (KEGG 
+ module) based search or a reaction based search, in `search-pathway` and `search-reactions`
+ commands, respectively. 
  
- See [KEGG](https://kegg.jp) (Kyoto Encyclopedia of Genes and Genomes)
+ See [KEGG here](https://kegg.jp) (Kyoto Encyclopedia of Genes and Genomes)
  
-## Design
- 1. Extraction - KEGG rest api
- 2. Organization
- 3. Path Identification - depth-first search algorithm
- 4. Optimization
+ This project was in partial completement of BEE3600 - Biological and Cellular Enginerring,
+ Cornell University
  
 ## Dependencies
  - python >3.0
@@ -61,3 +63,20 @@
 ```
 
 ## License
+
+## Possible Future Improvements
+ It is unknown if this project will remain under active developement/support in the future, but 
+ there some improvements which may be made to this program:
+ - breadth-first search algorithm
+ - thread optimization to reduce runtime
+   + (A thread class based on Python threading.Thread was made, but not implemented)
+ - parsing additional databases for pH, temperature, and other reaction conditions
+ 
+ And as always, no program is made perfect; feel free to report issues or fork.
+ 
+ ## (Code) Contributors
+  - Shaumik Ashraf
+  - Aaron-Earle Richardson
+ 
+ 
+ 
