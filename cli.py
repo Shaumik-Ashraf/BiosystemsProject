@@ -323,9 +323,9 @@ while 1==1:
 				verbose = False;
 		elif command[1]=="solve-gibbs":
 			if ('t' in command[2]) or ('T' in command[2]):
-				verbose = True;
+				solve_gibbs = True;
 			else:
-				verbose = False;
+				solve_gibbs = False;
 		else:
 			print( command[1] + " unrecognized" );
 	elif command[0] == "see-settings":

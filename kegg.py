@@ -202,7 +202,7 @@ def get_extract(query):
 
 		return ret;
 
-def A2B(compoundA, compoundB, depth_limit = 10, do_gibbs = False, verbose = True):
+def A2B(compoundA, compoundB, depth_limit, do_gibbs, verbose):
 	#set variable idA, ask if compoundA is correctly found
 	idAlist = []
 	if re.compile('C\d{5,}').match(compoundA):  #cpd id was provided
@@ -250,7 +250,7 @@ def A2B(compoundA, compoundB, depth_limit = 10, do_gibbs = False, verbose = True
 		
 	return search_modules(idAlist, idB, depth_limit, True, do_gibbs, verbose);
 
-def A2Br(compoundA, compoundB, depth_limit = 20, do_gibbs = False, verbose = True):
+def A2Br(compoundA, compoundB, depth_limit, do_gibbs, verbose):
 	#set variable idA, ask if compoundA is correctly found
 	idAlist = []
 	if re.compile('C\d{5,}').match(compoundA):  #cpd id was provided
@@ -298,7 +298,7 @@ def A2Br(compoundA, compoundB, depth_limit = 20, do_gibbs = False, verbose = Tru
 	return search_reactions(idAlist, idB, depth_limit, True, do_gibbs, verbose );
 
 
-def search_modules(idAlist, idB, depth_limit, fill_solution = True, do_gibbs = False, verbose = True ):
+def search_modules(idAlist, idB, depth_limit, fill_solution, do_gibbs, verbose):
 
 	solution = {'found':False, 'modules':[], 'reactions':[], 'enzymes':[], 'Gibbs':0};
 	for idA in idAlist:
@@ -329,14 +329,19 @@ def search_modules(idAlist, idB, depth_limit, fill_solution = True, do_gibbs = F
 							r_data = get_extract(r);
 							solution['enzymes'].append( r_data['ENZYME'] )
 							solution['reactions'].append(r)
+							print("DEBUG do gibbs = ", do_gibbs);
 							if do_gibbs:
 								print("Hacking several other databases for Gibbs Free Energy ({0})".format(i));
-								solution['Gibbs'], n = GIBBS(r,n)
+								t1, t2 = GIBBS(r,n);
+								solution['Gibbs'] += t1;
+								n += t2;
+							
 				break; #break out of for md in mdlist
 
-	return solution;  #I do not believe this ever gets called
-
-def search_reactions(cpdA_idlist, cpdB_id, depth_limit, fill_solution = True, do_gibbs = False, verbose = True):
+	return solution; 
+	
+	
+def search_reactions(cpdA_idlist, cpdB_id, depth_limit, fill_solution, do_gibbs, verbose):
 	if (depth_limit < 0):
 		depth_limit = 9999;
 	
@@ -360,8 +365,10 @@ def search_reactions(cpdA_idlist, cpdB_id, depth_limit, fill_solution = True, do
 						solution['enzymes'].append( r_data['ENZYME'] );
 						if do_gibbs:
 							print("Hacking several other databases for Gibbs Free Energy ({0})".format(i));
-							solution['Gibbs'], n = GIBBS(r,n)
-
+							t1, t2 = GIBBS(r,n);
+							solution['Gibbs'] += t1;
+							n += t2;
+							
 				return solution;        
 	
 	return(solution);
