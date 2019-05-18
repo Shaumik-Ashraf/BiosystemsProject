@@ -81,168 +81,126 @@ def link(database, query):
 #get_extract returns a dictionary containing any info rest.kegg.jp/get/* returns
 #i.e.: get/md:M00377 => { "ENTRY":"M00377" "NAME":"Reductive ... "REACTION":{"rnxxx":[[a,b][c,d]]}}
 def get_extract(query):
-<<<<<<< HEAD
-        to_parse = get(query);
-        lines = to_parse.splitlines();
-        ret = {};
+		to_parse = get(query);
+		lines = to_parse.splitlines();
+		ret = {};
 
-        while '' in lines:
-                lines.remove('')
+		while '' in lines:
+			lines.remove('')
 
-        blocks = [];
-        j = -1;
-        i = 0;
-        while i < len(lines): #parse keys and blocks
-                if lines[i] == '///':
-                        break;
-                elif lines[i].startswith(' ') or lines[i].startswith('\t'): #if first character is a space
-                        blocks[j] += ('\n' + lines[i].strip()); #concat strings
-                else:
-                        #start a new block
-                        j += 1; #start next blocks array element
-                        #print( "DEBUG: " + str(lines[i]) );
-                        temparray = lines[i].split();
-                        while '' in temparray:
-                                temparray.remove('');
-                        #print( "DEBUG: " + str(temparray) );
-                        #print( "DEBUG: " + str(temparray[1]) );
-                        key = temparray[0];
-                        ret[temparray[0]] = j;
-                        del temparray[0];
-                        blocks.insert(j, temparray);
-                        blocks[j] = " ".join(blocks[j]) #list => string
-                        if key == "ENTRY":
-                                tokens = blocks[j].split();
-                                ret[key] = tokens[0];
-                                ret["TYPE"] = tokens[1:];
-                i += 1		#end while loop
-        keys2 = list(ret.keys())
-        if 'ENTRY' in keys2:
-        	keys2.remove('ENTRY');
-        if 'TYPE' in keys2:
-        	keys2.remove('TYPE');
-=======
-	to_parse = get(query);
-	lines = to_parse.splitlines();
-	ret = {};
+		blocks = [];
+		j = -1;
+		i = 0;
+		while i < len(lines): #parse keys and blocks
+			if lines[i] == '///':
+				break;
+			elif lines[i].startswith(' ') or lines[i].startswith('\t'): #if first character is a space
+				blocks[j] += ('\n' + lines[i].strip()); #concat strings
+			else:
+				#start a new block
+				j += 1; #start next blocks array element
+				#print( "DEBUG: " + str(lines[i]) );
+				temparray = lines[i].split();
+				while '' in temparray:
+					temparray.remove('');
+				#print( "DEBUG: " + str(temparray) );
+				#print( "DEBUG: " + str(temparray[1]) );
+				key = temparray[0];
+				ret[temparray[0]] = j;
+				del temparray[0];
+				blocks.insert(j, temparray);
+				blocks[j] = " ".join(blocks[j]) #list => string
+				if key == "ENTRY":
+					tokens = blocks[j].split();
+					ret[key] = tokens[0];
+					ret["TYPE"] = tokens[1:];
+			i += 1;
+			#end while loop
+		keys2 = list(ret.keys());
+		if 'ENTRY' in keys2:
+			keys2.remove('ENTRY');
+		if 'TYPE' in keys2:
+			keys2.remove('TYPE');
+			
+		for key in keys2: #parse blocks into structured dicts
+			block = blocks[ret[key]]
+			if key == '///': #shouldnt occur
+				break;
+			elif key == "ENTRY":
+				continue; 
+			elif key == "COMPOUND":
+				ret[key] = []
+				lines = block.splitlines()
+				for i in range(len(lines)):
+					line = lines[i].strip()
+					match_obj = re.match(r'(C[0-9]{5})[\s]+(.*)', line, 0);
+					id = match_obj.group(1);
+					name = match_obj.group(2);
+					(ret[key]).append( {'ID':id, 'NAME':name} );
+			elif (key == "REACTION") and ('Module' in ret["TYPE"]):
+				ret[key] = [] # [{'ID':<id>, 'REACTANTS':[...], 'PRODUCTS':[...]}]
+				lines = block.splitlines();
+				for i in range(len(lines)): #parsing each line
+					d = {'ID':'', 'REACTANTS':[], 'PRODUCTS':[] }
+					line = lines[i].strip();
+					tokens = line.split();
+					while '' in tokens:
+						tokens.remove('');
+					
+					if tokens == []:
+						break;
 
-	while '' in lines:
-		lines.remove('')
+					if ',' in tokens[0]:
+						temp = tokens[0].split(',');
+						d['ID'] = temp[len(temp)-1]
+					else:
+						d['ID'] = tokens[0];
+						#doesn't consider case of RX,RY+RZ
+					
+					passed_arrow = False;
+					j = 1;
+					while j < len(tokens): #parsing each token
+						#print('parsing react')
+						if tokens[j] == '->':
+							passed_arrow = True;
+						elif( (not passed_arrow) and (tokens[j] != '+') ):
+							d['REACTANTS'].append(tokens[j]);
+						elif( passed_arrow and (tokens[j] != '+') ):
+							d['PRODUCTS'].append(tokens[j])
+						j += 1
 
-	blocks = [];
-	j = -1;
-	i = 0;
-	while i < len(lines): #parse keys and blocks
-		if lines[i] == '///':
-			break;
-		elif lines[i].startswith(' ') or lines[i].startswith('\t'): #if first character is a space
-			blocks[j] += ('\n' + lines[i].strip()); #concat strings
-		else:
-			#start a new block
-			j += 1; #start next blocks array element
-			#print( "DEBUG: " + str(lines[i]) );
-			temparray = lines[i].split();
-			while '' in temparray:
-				temparray.remove('');
-			#print( "DEBUG: " + str(temparray) );
-			#print( "DEBUG: " + str(temparray[1]) );
-			key = temparray[0];
-			ret[temparray[0]] = j;
-			del temparray[0];
-			blocks.insert(j, temparray);
-			blocks[j] = " ".join(blocks[j]) #list => string
-			if key == "ENTRY":
-				tokens = blocks[j].split();
-				ret[key] = tokens[0];
-				ret["TYPE"] = tokens[1:];
-		i += 1;
-		#end while loop
-	keys2 = list(ret.keys());
-	if 'ENTRY' in keys2:
-		keys2.remove('ENTRY');
-	if 'TYPE' in keys2:
-		keys2.remove('TYPE');
->>>>>>> 5d51fe444c4f2999e8179c92c78bdb41126ce935
-		
-	for key in keys2: #parse blocks into structured dicts
-		block = blocks[ret[key]]
-		if key == '///': #shouldnt occur
-			break;
-		elif key == "ENTRY":
-			continue; 
-		elif key == "COMPOUND":
-			ret[key] = []
-			lines = block.splitlines()
-			for i in range(len(lines)):
-				line = lines[i].strip()
-				match_obj = re.match(r'(C[0-9]{5})[\s]+(.*)', line, 0);
-				id = match_obj.group(1);
-				name = match_obj.group(2);
-				(ret[key]).append( {'ID':id, 'NAME':name} );
-		elif (key == "REACTION") and ('Module' in ret["TYPE"]):
-			ret[key] = [] # [{'ID':<id>, 'REACTANTS':[...], 'PRODUCTS':[...]}]
-			lines = block.splitlines();
-			for i in range(len(lines)): #parsing each line
-				d = {'ID':'', 'REACTANTS':[], 'PRODUCTS':[] }
-				line = lines[i].strip();
-				tokens = line.split();
-				while '' in tokens:
-					tokens.remove('');
-				
-				if tokens == []:
-					break;
-
-				if ',' in tokens[0]:
-					temp = tokens[0].split(',');
-					d['ID'] = temp[len(temp)-1]
-				else:
-					d['ID'] = tokens[0];
-					#doesn't consider case of RX,RY+RZ
-				
-				passed_arrow = False;
-				j = 1;
-				while j < len(tokens): #parsing each token
-					#print('parsing react')
-					if tokens[j] == '->':
-						passed_arrow = True;
-					elif( (not passed_arrow) and (tokens[j] != '+') ):
-						d['REACTANTS'].append(tokens[j]);
-					elif( passed_arrow and (tokens[j] != '+') ):
-						d['PRODUCTS'].append(tokens[j])
-					j += 1
-
-				ret[key].append(d);     
-		elif (key == "REACTION") and ('Compound' in ret["TYPE"]):
-			ret[key] = [];
-			lines = block.splitlines();
-			for each in lines:
-				line = each.strip();
-				tokens = line.split();
+					ret[key].append(d);     
+			elif (key == "REACTION") and ('Compound' in ret["TYPE"]):
+				ret[key] = [];
+				lines = block.splitlines();
+				for each in lines:
+					line = each.strip();
+					tokens = line.split();
+					while '' in tokens:
+						tokens.remove('')
+					for token in tokens:
+						ret[key].append(token)
+			elif (key == "EQUATION") and ('Reaction' in ret["TYPE"]):
+				ret[key] = {'REACTANTS':[], 'PRODUCTS':[], 'RATIOS':[]}
+				tokens = block.strip().split();
 				while '' in tokens:
 					tokens.remove('')
+				
+				passed_arrow = False;
 				for token in tokens:
-					ret[key].append(token)
-		elif (key == "EQUATION") and ('Reaction' in ret["TYPE"]):
-			ret[key] = {'REACTANTS':[], 'PRODUCTS':[], 'RATIOS':[]}
-			tokens = block.strip().split();
-			while '' in tokens:
-				tokens.remove('')
-			
-			passed_arrow = False;
-			for token in tokens:
-				if token == "<=>":
-					passed_arrow = True;
-				elif token.isdigit():
-					ret[key]['RATIOS'].append(token);
-				elif( token.startswith('C') and (not passed_arrow)):
-					ret[key]['REACTANTS'].append( token );
-				elif( token.startswith('C') ): #and passed_arrow (implied):
-					ret[key]['PRODUCTS'].append( token );
-					
-		else:
-			ret[ key ] = block;
+					if token == "<=>":
+						passed_arrow = True;
+					elif token.isdigit():
+						ret[key]['RATIOS'].append(token);
+					elif( token.startswith('C') and (not passed_arrow)):
+						ret[key]['REACTANTS'].append( token );
+					elif( token.startswith('C') ): #and passed_arrow (implied):
+						ret[key]['PRODUCTS'].append( token );
+						
+			else:
+				ret[ key ] = block;
 
-	return ret;
+		return ret;
 
 def A2B(compoundA, compoundB, depth_limit = 10, do_gibbs = False, verbose = True):
 	#set variable idA, ask if compoundA is correctly found
@@ -398,14 +356,8 @@ def search_reactions(cpdA_idlist, cpdB_id, depth_limit, fill_solution = True, do
 					solution['enzymes'] = []
 					n = 0;
 					for r in solution['reactions']:
-<<<<<<< HEAD
-        					r_data = get_extract(r);
-                                                if 'ENZYME' in r_data.keys():
-        					        solution['enzymes'].append( r_data['ENZYME'] )
-=======
 						r_data = get_extract(r);
 						solution['enzymes'].append( r_data['ENZYME'] );
->>>>>>> 5d51fe444c4f2999e8179c92c78bdb41126ce935
 						if do_gibbs:
 							print("Hacking several other databases for Gibbs Free Energy ({0})".format(i));
 							solution['Gibbs'], n = GIBBS(r,n)
