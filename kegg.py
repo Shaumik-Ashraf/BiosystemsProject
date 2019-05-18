@@ -114,13 +114,12 @@ def get_extract(query):
                                 tokens = blocks[j].split();
                                 ret[key] = tokens[0];
                                 ret["TYPE"] = tokens[1:];
-                i += 1;
-				#end while loop
-		keys2 = list(ret.keys());
-		if 'ENTRY' in keys2:
-				keys2.remove('ENTRY');
-		if 'TYPE' in keys2:
-        		keys2.remove('TYPE');
+                i += 1		#end while loop
+        keys2 = list(ret.keys())
+        if 'ENTRY' in keys2:
+        	keys2.remove('ENTRY');
+        if 'TYPE' in keys2:
+        	keys2.remove('TYPE');
 		
         for key in keys2: #parse blocks into structured dicts
                 #print("DEBUG: " + key )
@@ -359,12 +358,14 @@ def search_reactions(cpdA_idlist, cpdB_id, depth_limit, fill_solution = True, do
 				if fill_solution:
 					solution['enzymes'] = []
 					n = 0;
-					for r in solution:
-						r_data = get_extract(r);
-						solution['enzymes'].append( r_data['ENZYME'] );
+					for r in solution['reactions']:
+        					r_data = get_extract(r);
+                                                if 'ENZYME' in r_data.keys():
+        					        solution['enzymes'].append( r_data['ENZYME'] )
 						if do_gibbs:
 							print("Hacking several other databases for Gibbs Free Energy ({0})".format(i));
 							solution['Gibbs'], n = GIBBS(r,n)
+
 				return solution;        
 	
 	return(solution);
