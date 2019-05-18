@@ -383,31 +383,32 @@ def module_helper(cpdB, module, past_modules, depth, limit):
 		return [False]; #no solutions
 
 #The following compounds are blacklisted becuase they are too common
-#water, oxygen, carbon dioxide
-blacklisted_compounds = ['C00001', 'C00007', 'C00011']
+#water, oxygen
+blacklisted_compounds = ['C00001', 'C00007'] #water and Oxygen because they are not likely products of efficient reaction pathways
 def reaction_helper(cpdB, reaction, past_reactions, rdepth, limit):
-	print( "Trying " + str(past_reactions + [reaction]) );
+	#print( "Trying " + str(past_reactions + [reaction]) );
 	#print(len(past_reactions))
 	#print(rdepth, limit)
 	if (len(past_reactions) > limit) :
+		#print('Too phat')
 		return [False];
 	elif (reaction in past_reactions):
 		return [False];
 	else:
 		rxn_data = get_extract(reaction);
-		if (cpdB not in rxn_data['EQUATION']['REACTANTS']):
+		if (cpdB in rxn_data['EQUATION']['REACTANTS']):
+			#print('ET phone home')
 			return [False];
 		elif (cpdB in rxn_data['EQUATION']['PRODUCTS']):
 			return [reaction];
-		else:
-			print( "Trying " + str(past_reactions + [reaction]) );
-			for p in rxn_data['EQUATION']['PRODUCTS']:
-				if p not in blacklisted_compounds:
-					next_rxn_list = link('reaction', p);
-					for next_reaction in next_rxn_list:
-						x = [reaction] + reaction_helper(cpdB, next_reaction, past_reactions + [reaction], (rdepth+1), limit);
-						if x[-1]: #if last element not False
-							return x;
+		for p in rxn_data['EQUATION']['PRODUCTS']:
+			if p not in blacklisted_compounds:
+				next_rxn_list = link('reaction', p);
+				for next_reaction in next_rxn_list:
+					print( "Trying 2" + str(past_reactions + [reaction]) )
+					x = [reaction] + reaction_helper(cpdB, next_reaction, past_reactions + [reaction], (rdepth+1), limit);
+					if x[ len(x)-1 ]: #if last element not False
+						return x;
 	return [False];
 
 def remove_id_prefix(s):
