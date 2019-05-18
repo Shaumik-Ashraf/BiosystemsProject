@@ -96,50 +96,48 @@ def print_dict(d, limit): #limit here is output-line-limit
 		i += 1;
 	print("}");
 
-def print_dict_to_csv(d, filename):
-	if filename[-4:] != ".csv":
-		filename += ".csv"
-	file = open(filename, 'w');
-	
-	key_list = list(d.keys());
-	key_list_caps = list(range(len(key_list))); #preallocate array
-	key_ctr = list(range(len(key_list))); #preallocate array
-	d_lens = key_ctr.dup();
-	for i in range(len(key_list)):
-		key_list_caps[i] = key_list[i].capitalize();
-		key_ctr[i] = 0;
-		d_lens[i] = len(d[key_list[i]])
-
-	first_line = ",".join(key_list_caps) + "\n";
-	file.write(first_line);
-		
-	max_j = 0;
-	while( max_j < (max(d_lens)-1) ):
-		for i in range(len(key_list)):
-			j = key_ctr[i];
-			key = key_list[i];
-			line = "";
-			if j > len(d[key]):
-				line += " ,"
-			else:
-				line += (d[key][j] + ",");
-				key_ctr[i] += 1;
-		line[len(line)-1] = "\n"  #replace last char from , to \n
-		file.write(line);
-		max_j = max(key_ctr);
-	
-	file.close();
-	#end while
-#end def
-
 def singularize(s):
-	if s.endswith('s'):
+	xceptions = ['solve-gibbs', 'gibbs']
+	if s.endswith('s') and (s not in xceptions):
 		return s[:len(s)-1];
 	else:
 		return s;
 
 def get_settings_as_dict():
 	return {'list-limit':list_limit, 'output-line-limit':output_line_limit, 'verbose':verbose, 'depth-limit':depth_limit, 'solve-gibbs':solve_gibbs}
+
+
+def print_dict_to_txt(d, filename):
+	if filename[-4:] != ".txt":
+		filename += ".txt"
+	file = open(filename, 'w');
+	
+	file.write("{\n");
+	key_list = list(d.keys());
+	i = 0;
+	while( i < len(key_list) ):
+		val = d[key_list[i]]
+		file.write("\t{0} : {1}\n".format(key_list[i],val));
+		i += 1;
+	file.write("}\n\n");
+	file.close();
+
+def print_full_to_txt(d, filename):
+	if filename[-4:] != ".txt":
+		filename += ".txt"
+	file = open(filename, 'w');
+	
+	for key in d:
+		file.write( "============================================\n");
+		file.write( "===========   " + key + "   ===========\n");
+		file.write( "============================================\n");
+		value = d[key];
+		if type(value) is list:
+			for each in value:
+				file.write( kegg.get( each ) + "\n" );
+	
+	file.close();		
+
 
 # ========command-line loop============================
 print( "Start KEGG Command-Line Interface" );
@@ -241,9 +239,9 @@ while 1==1:
 			start = time.time_ns();
 			print("search-pathway...")
 		if len(command) == 4:
-			x = kegg.A2B(command[1], command[2], command[3]);
+			x = kegg.A2B(command[1], command[2], command[3], solve_gibbs, verbose);
 		else:
-			x = kegg.A2B(command[1], command[2], depth_limit);
+			x = kegg.A2B(command[1], command[2], depth_limit, solve_gibbs, verbose);
 		print_dict(x, output_line_limit);
 		defined['solution'] = x;
 		if verbose:
@@ -255,9 +253,9 @@ while 1==1:
 			start = time.time_ns();
 			print("search-reaction...");
 		if len(command) == 4:
-			x = kegg.A2Br(command[1], command[2], command[3]);
+			x = kegg.A2Br(command[1], command[2], command[3], solve_gibbs, verbose);
 		else:
-			x = kegg.A2Br(command[1], command[2], depth_limit);
+			x = kegg.A2Br(command[1], command[2], depth_limit, solve_gibbs, verbose);
 		print_dict(x, output_line_limit);
 		defined['solution'] = x;
 		if verbose:
@@ -272,6 +270,10 @@ while 1==1:
 		if verbose:
 			end = time.time_ns();
 			print("Time: {0} nanoseconds".format(end - start));
+	elif command[0].capitalize() == "Gibbs":
+		needs_args(2);
+		x, y = GIBBS(command[1])
+		print( x );
 	elif command[0] == "define":
 		needs_args(3);
 		kid = kegg.get_id(command[1], command[2]);

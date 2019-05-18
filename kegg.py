@@ -389,7 +389,7 @@ def module_helper(cpdB, module, past_modules, depth, limit):
 
 #The following compounds are blacklisted becuase they are too common
 #water, oxygen
-blacklisted_compounds = ['C00001', 'C00007'] #water and Oxygen because they are not likely products of efficient reaction pathways
+blacklisted_compounds = ['C00001', 'C00007'] #water and oxygen because they are not likely products of efficient reaction pathways
 def reaction_helper(cpdB, 
                                         reaction,  
                                         past_reactions,
@@ -405,7 +405,10 @@ def reaction_helper(cpdB,
 
         if ( rdepth > limit):
                 if verbose:
+					if( random.random() < 0.01 ): #easter egg
                         print('\tToo phat');
+					else:
+						print('\tReject, depth limit reached');
                 return [False];
 
         if reaction in past_reactions:
