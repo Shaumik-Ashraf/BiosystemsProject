@@ -223,8 +223,9 @@ def A2B(compoundA, compoundB, depth_limit):
 			idAlist.append(idA.split(':')[1])
 			extras = get_extract(idA)
 			if "COMMENT" in extras:
-				for moreidAs in re.search("C\d\d\d\d\d", extras["COMMENT"]).groups():
-					idAlist.append(moreidAs)
+				for moreidAs in extras["COMMENT"].split('\n'):
+					idAlist.append(re.search("(C\d\d\d\d\d)", moreidAs).group())
+			
 	#set variable idB, ask if compoundB is correctly found
 	if re.compile('C\d{5,}').match(compoundB):
 		idB = compoundB;
@@ -270,8 +271,8 @@ def A2Br(compoundA, compoundB, depth_limit):
 			idAlist.append(idA.split(':')[1])
 			extras = get_extract(idA)
 			if "COMMENT" in extras:
-				for moreidAs in re.search("C\d\d\d\d\d", extras["COMMENT"]).groups():
-					idAlist.append(moreidAs)
+				for moreidAs in extras["COMMENT"].split('\n'):
+					idAlist.append(re.search("(C\d\d\d\d\d)", moreidAs).group())
 	#set variable idB, ask if compoundB is correctly found
 	if re.compile('C\d{5,}').match(compoundB):
 		idB = compoundB;
@@ -299,9 +300,12 @@ def search_modules(idAlist, idB, depth_limit, fill_solution, do_gibbs = False ):
 
 	solution = {'found':False, 'modules':[], 'reactions':[], 'enzymes':[], 'Gibbs':0};
 	for idA in idAlist:
+		print(idA)
 		mdlist = link("module", idA);
 		if( mdlist == [] ):
-			return solution; #no solution for module based search
+			#print('problem')
+			#return solution; 
+			continue #no solution for module based search
 		#sollist = []
 		GFE = 0
 		for md in mdlist:
@@ -336,8 +340,7 @@ def search_reactions(cpdA_idlist, cpdB_id, depth_limit):
 		past_reactions = []
 		reactions = link("reaction", cpdA_id);
 		if len(reactions)==0:
-			return solution; #no solutions
-		
+			continue; #no solutions	
 		for rn in reactions:
 			solution["reactions"] = reaction_helper(cpdB_id, rn, past_reactions, 0, depth_limit)
 			if solution["reactions"][ len(solution["reactions"])-1 ]: #if last reaction is not false:
@@ -388,25 +391,24 @@ def reaction_helper(cpdB, reaction, past_reactions, rdepth, limit):
 	#print(rdepth, limit)
 	if (len(past_reactions) > limit) :
 		return [False];
-	if (reaction in past_reactions):
+	elif (reaction in past_reactions):
 		return [False];
-	rxn_data = get_extract(reaction);
-	if (cpdB not in rxn_data['EQUATION']['REACTANTS']):
-		return [False];
-	products = rxn_data['EQUATION']['PRODUCTS'];
-	if (cpdB in products):
-		return [reaction];
 	else:
-		print( "Trying " + str(past_reactions + [reaction]) );
-		for p in products:
-			if p not in blacklisted_compounds:
-				next_rxn_list = link('reaction', p);
-				for next_reaction in next_rxn_list:
-					x = [reaction] + reaction_helper(cpdB, next_reaction, past_reactions + [reaction], (rdepth+1), limit);
-					if x[-1]: #if last element not False
-						return x;
-
-		return [False];
+		rxn_data = get_extract(reaction);
+		if (cpdB not in rxn_data['EQUATION']['REACTANTS']):
+			return [False];
+		elif (cpdB in rxn_data['EQUATION']['PRODUCTS']):
+			return [reaction];
+		else:
+			print( "Trying " + str(past_reactions + [reaction]) );
+			for p in rxn_data['EQUATION']['PRODUCTS']:
+				if p not in blacklisted_compounds:
+					next_rxn_list = link('reaction', p);
+					for next_reaction in next_rxn_list:
+						x = [reaction] + reaction_helper(cpdB, next_reaction, past_reactions + [reaction], (rdepth+1), limit);
+						if x[-1]: #if last element not False
+							return x;
+	return [False];
 
 def remove_id_prefix(s):
 	i = s.index(':')
