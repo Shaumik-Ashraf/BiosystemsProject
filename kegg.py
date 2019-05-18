@@ -355,7 +355,7 @@ def search_reactions(cpdA_idlist, cpdB_id, depth_limit, fill_solution = True, do
 				if fill_solution:
 					solution['enzymes'] = []
 					n = 0;
-					for r in solution:
+					for r in solution['reactions']:
 						r_data = get_extract(r);
 						solution['enzymes'].append( r_data['ENZYME'] );
 						if do_gibbs:
