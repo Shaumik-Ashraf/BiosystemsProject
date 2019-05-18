@@ -400,8 +400,6 @@ def reaction_helper(cpdB,
 	if ( rdepth > limit) :
 		#print('Too phat')
 		return [False];
-	if (reaction in past_reactions):
-		return [False];
 	if ( intermediate in all_past_intermediates ):
 		return [False]; 
 	else:
