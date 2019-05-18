@@ -55,7 +55,7 @@ help_text = """
 list_limit = 20;
 output_line_limit = 20;
 depth_limit = 10;
-verbose = False;
+verbose = True;
 solve_gibbs = False;
 defined = {'water':'C00001', 'H20':'C00001'};
 
