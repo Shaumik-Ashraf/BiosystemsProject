@@ -89,6 +89,9 @@
  ## (Code) Contributors
   - Shaumik Ashraf
   - Aaron-Earle Richardson
+
+
+  A special thanks to [Professor Buzz Barstow](https://bee.cals.cornell.edu/people/buz-barstow/) of Cornell University for mentoring and encouraging this project. 
  
  
  
